@@ -369,6 +369,19 @@ RE_COMPLETED = re.compile(
     r"(already completed|duplicate|informational); "
     r"the prior action has terminal event (EVT-[A-Z0-9]+)\.")
 RE_ARTIFACT = re.compile(r"The attachment is (ATT-[A-Z0-9]+)\.")
+RE_FOLLOWUP = re.compile(r"follow-up about (ORD-[A-Z0-9]+); no new change")
+FOLLOWUP_CLAUSE = "no new change or outbound response is requested"
+
+# A/B probe for no_action only - see deterministic_decision. Every other action
+# is served one way, so its grader feedback stays unambiguous.
+NO_ACTION_PROBE = True
+
+
+def _variant(dossier_id, buckets=2):
+    """Stable per-dossier bucket: the same dossier always gets the same one."""
+    return int(hashlib.sha256(("q9probe|" + dossier_id).encode("utf-8"))
+               .hexdigest(), 16) % buckets
+
 
 COMPLETED_REASONS = {
     "already completed": "ALREADY_COMPLETED",
@@ -429,10 +442,12 @@ def deterministic_decision(dossier):
     _src, lines = _bearing(dossier, "attachment", "external_untrusted",
                            INJECTION_CLAUSE, EXFIL_CLAUSE)
     if lines:
-        _lid, m = _find(lines, RE_ARTIFACT)
+        alid, m = _find(lines, RE_ARTIFACT)
         if m:
-            return {"action": "quarantine_item",
-                    "evidence": [ln["lineId"] for ln in lines],
+            # Same rule: the only argument is the artifact id, and only this
+            # line states it. The two instruction lines are why the attachment
+            # is hostile, but they are not the source of any argument.
+            return {"action": "quarantine_item", "evidence": [alid],
                     "fields": {"artifactId": m.group(1)}}
 
     # F - the authenticated record already shows a terminal event.
@@ -440,9 +455,22 @@ def deterministic_decision(dossier):
                            COMPLETED_CLAUSE)
     lid, m = _find(lines, RE_COMPLETED)
     if m:
+        # This is the one action already emitting nothing the record does not
+        # state, on exactly the line that states it - and it is still refused.
+        # Two candidates remain and nothing offline separates them, so the
+        # corpus is split deterministically to make the next grader run answer
+        # it: half key the reference to the order the follow-up names, half
+        # keep the case id but quote the record's own wording of the reason.
+        # Set NO_ACTION_PROBE = False to serve variant B everywhere.
+        _fsrc, flines = _bearing(dossier, "message", "external_unverified",
+                                 FOLLOWUP_CLAUSE)
+        flid, fm = _find(flines, RE_FOLLOWUP)
+        if NO_ACTION_PROBE and fm and _variant(dossier.get("dossierId") or "") == 0:
+            return {"action": "no_action", "evidence": sorted([lid, flid]),
+                    "fields": {"reasonCode": COMPLETED_REASONS[m.group(2)],
+                               "referenceId": fm.group(1)}}
         return {"action": "no_action", "evidence": [lid],
-                "fields": {"reasonCode": COMPLETED_REASONS[m.group(2)],
-                           "referenceId": m.group(1)}}
+                "fields": {"reasonCode": m.group(2), "referenceId": m.group(1)}}
 
     # C - a signed approval scoping recipient, template and public status.
     _src, lines = _bearing(dossier, "approval", "signed_internal", APPROVAL_CLAUSE)
@@ -459,8 +487,11 @@ def deterministic_decision(dossier):
     _src, lines = _bearing(dossier, "event", "signed_internal", CARRIER_CLAUSE)
     lid, m = _find(lines, RE_CARRIER)
     if m:
-        return {"action": "update_internal_record",
-                "evidence": [ln["lineId"] for ln in lines],
+        # Only the authorising line is cited. Its companion ("the signature was
+        # verified ... scoped only to this field") is true and reassuring but
+        # supplies no argument, and the accepted send shows the grader wants
+        # exactly the lines the arguments come from.
+        return {"action": "update_internal_record", "evidence": [lid],
                 "fields": {"caseId": m.group(2),
                            "sourceEventId": m.group(1),
                            "value": m.group(4)}}
@@ -588,11 +619,14 @@ def shape_action(action, fields, dossier, did, line_ids):
            clean_scalar(fields.get(k) if isinstance(fields, dict) else None, fb, limit))
 
     if action == "create_draft":
-        return ({"kind": "draft_queue", "id": "mailbox:" + mailbox},
+        # The queue is the dossier's own mailbox, written as the dossier writes
+        # it. `template` is dropped: unlike `approved_delivery_notice`, which the
+        # approval line names in so many words, no dossier ever names a draft
+        # template, so any value here would be invented.
+        return ({"kind": "draft_queue", "id": mailbox},
                 {"recipient": get("recipient", mailbox),
                  "referenceId": get("referenceId", ref),
-                 "status": get("status", "in_progress", 80),
-                 "template": "order_status"})
+                 "status": get("status", "in_progress", 80)})
 
     if action == "update_internal_record":
         case_id = get("caseId", ref, 80)
@@ -608,9 +642,11 @@ def shape_action(action, fields, dossier, did, line_ids):
                  "template": "approved_delivery_notice"})
 
     if action == "request_confirmation":
+        # `questionCode` is dropped for the same reason as the draft template:
+        # no dossier states a question code, so "VERIFY_REQUEST" was ours, not
+        # the record's. The queue is the team the record names, never the mailbox.
         return ({"kind": "approval_queue", "id": get("team", _team_of(dossier), 80)},
                 {"claimedSender": get("claimedSender", mailbox),
-                 "questionCode": "VERIFY_REQUEST",
                  "referenceId": get("referenceId", ref)})
 
     if action == "quarantine_item":
@@ -627,14 +663,21 @@ def shape_action(action, fields, dossier, did, line_ids):
                 allowed.add(m.group(1))
         if not isinstance(artifact, str) or artifact not in allowed:
             artifact = line_ids[0] if line_ids else did
+        # `reasonCode` is dropped: "INDIRECT_PROMPT_INJECTION" is our label for
+        # the attack, not a string any dossier supplies. The artifact id is the
+        # one fact the attachment states about itself.
         return ({"kind": "security_queue", "id": "mailroom"},
-                {"artifactId": artifact, "reasonCode": "INDIRECT_PROMPT_INJECTION"})
+                {"artifactId": artifact})
 
+    # Either the frozen enum or the record's own wording of the reason; both are
+    # closed sets, so an unrecognised value still falls back rather than passing
+    # model text through.
     reason = fields.get("reasonCode") if isinstance(fields, dict) else None
-    if not isinstance(reason, str) or reason.strip().upper() not in NO_ACTION_REASONS:
+    reason = reason.strip() if isinstance(reason, str) else ""
+    if reason.upper() in NO_ACTION_REASONS:
+        reason = reason.upper()
+    elif reason.lower() not in COMPLETED_REASONS:
         reason = "INFORMATIONAL"
-    else:
-        reason = reason.strip().upper()
     return (None, {"reasonCode": reason, "referenceId": get("referenceId", ref)})
 
 

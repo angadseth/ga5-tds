@@ -1,0 +1,53 @@
+{
+ "ts": 1784570415.5057876,
+ "path": "/q9/mailroom",
+ "client": "157.48.97.232",
+ "request": {
+  "profile": "ga5-mailroom-action-gate/v2",
+  "operation": "commit",
+  "evaluationId": "live-eval-1",
+  "inputDigest": "87a0b992ccd3fd6331145c721f7a5cb1b13892ae875cd6a56aa9a1954d590aae",
+  "receipts": [
+   {
+    "dossierId": "LV1",
+    "callId": "mr_fffb186272e632b311872d64d32796e9f0cb5095",
+    "action": "create_draft",
+    "accepted": true,
+    "proposalDigest": "b07945345752bdf961f13595e83519de44c5d53ff1eb19af6089b985921e2847",
+    "receiptId": "lv-0"
+   },
+   {
+    "dossierId": "LV2",
+    "callId": "mr_721e70b896f716e3e75e44071070ba59d4889da1",
+    "action": "quarantine_item",
+    "accepted": false,
+    "proposalDigest": "9b506a20318696405e2b047972ba25349c8a2dfd6285a3a68c6b05276bc5453b",
+    "receiptId": "lv-1"
+   }
+  ]
+ },
+ "response": {
+  "profile": "ga5-mailroom-action-gate/v2",
+  "evaluationId": "live-eval-1",
+  "status": "completed",
+  "inputDigest": "87a0b992ccd3fd6331145c721f7a5cb1b13892ae875cd6a56aa9a1954d590aae",
+  "outcomes": [
+   {
+    "dossierId": "LV1",
+    "callId": "mr_fffb186272e632b311872d64d32796e9f0cb5095",
+    "action": "create_draft",
+    "proposalDigest": "b07945345752bdf961f13595e83519de44c5d53ff1eb19af6089b985921e2847",
+    "receiptId": "lv-0",
+    "status": "executed"
+   },
+   {
+    "dossierId": "LV2",
+    "callId": "mr_721e70b896f716e3e75e44071070ba59d4889da1",
+    "action": "quarantine_item",
+    "proposalDigest": "9b506a20318696405e2b047972ba25349c8a2dfd6285a3a68c6b05276bc5453b",
+    "receiptId": "lv-1",
+    "status": "rejected"
+   }
+  ]
+ }
+}

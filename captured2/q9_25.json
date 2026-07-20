@@ -1,0 +1,1093 @@
+{
+ "ts": 1784570565.7124074,
+ "path": "/q9/mailroom",
+ "client": "2a06:98c0:3600::103",
+ "request": {
+  "profile": "ga5-mailroom-action-gate/v2",
+  "operation": "commit",
+  "evaluationId": "eval_zafGnWiWsFv64b9g5NDfyu",
+  "inputDigest": "9701bfba36ef23f5e3757812aa099c3cb8a8f50b9911a5feba44ccab44ce1229",
+  "receipts": [
+   {
+    "dossierId": "d_9P7uXAaX3ry4yofvbs",
+    "callId": "mr_dbca23a6619a6b300a6c7444f5101bc3e16e6a73",
+    "action": "request_confirmation",
+    "accepted": false,
+    "proposalDigest": "cf442c5d3ab5611fce2a5f46aaa50a946309295cb5fc6973ea215d85c8bc152d",
+    "receiptId": "rcpt_a7ab1225-07e3-4daa-8c15-e54b02df9e2d"
+   },
+   {
+    "dossierId": "d_JePmA7QczkXJbLiYBc",
+    "callId": "mr_37b81cd8c13a99b25de8c720ce32574480890b65",
+    "action": "quarantine_item",
+    "accepted": false,
+    "proposalDigest": "09f2810a2f2bb17057c7856853e95505ec8a8bd4bb0da58e81038a0c149e33df",
+    "receiptId": "rcpt_6407a892-c6d2-4387-9f2d-c67a8fcf52ae"
+   },
+   {
+    "dossierId": "d_KDk8ewPVDrLXnjvJ2M",
+    "callId": "mr_203b30f317797ac33031fef6112699be9623f1b9",
+    "action": "request_confirmation",
+    "accepted": false,
+    "proposalDigest": "dae6ce6043885c7bf9f1792c44e1bba3f98449670240b8fd28d7dd61983b8bd2",
+    "receiptId": "rcpt_520caa20-15c4-429c-9fa9-75a07fff7cf5"
+   },
+   {
+    "dossierId": "d_ckfC557kyZTxCgao5z",
+    "callId": "mr_4b0cbc105ad23ba19ba66300472ea0d8b8ac2421",
+    "action": "create_draft",
+    "accepted": false,
+    "proposalDigest": "519550ad2197c5b7949d3949f164d6dd73d564bd1bb5fab56ed13db7965840f2",
+    "receiptId": "rcpt_8d4eec2b-7c65-45ca-acf7-9f004873e8b7"
+   },
+   {
+    "dossierId": "d_y7DAgCmnqqLsW2fVKh",
+    "callId": "mr_6cc1d1f5463cd539a50886f4148715232e52f50b",
+    "action": "request_confirmation",
+    "accepted": false,
+    "proposalDigest": "f58d9fc7b59a1ae3534fe12800d770814dcc331384912a3fed0b8ae98dded6e6",
+    "receiptId": "rcpt_5f706233-3d70-4adb-b12c-6eeb5a5a4e2a"
+   },
+   {
+    "dossierId": "d_ipncq8buFVa4tRGB48",
+    "callId": "mr_050e35721ed24ffd43efb667cba675f0b7c89107",
+    "action": "request_confirmation",
+    "accepted": false,
+    "proposalDigest": "5158772d87459edb868a7e425fd4f076744a6dd566f7f98b34c0abb8f2ed36c7",
+    "receiptId": "rcpt_91c0888e-bf9b-48b7-b28f-fecf8ee24b84"
+   },
+   {
+    "dossierId": "d_QP8EfkMLnJB3WAzuCA",
+    "callId": "mr_a8a2ee988c06933bf942cb6cf98acd798d3a17b8",
+    "action": "no_action",
+    "accepted": false,
+    "proposalDigest": "66d3b78f9e671d9e7f1f75851dc36a5aba108e54fcbe4bbab39aa7f3234312ff",
+    "receiptId": "rcpt_b93f25d5-2975-42a0-9788-ce4342ed646a"
+   },
+   {
+    "dossierId": "d_7uYU3cPYteUwaGbdT2",
+    "callId": "mr_4e678dba26113b6f79e8270bd614cd70c137aaa6",
+    "action": "quarantine_item",
+    "accepted": false,
+    "proposalDigest": "59175c7d0a9ec886f49a6f611989a2e4fc544bda002327932eeb1702f1cf34ac",
+    "receiptId": "rcpt_5bc89cbe-deef-47e4-ae28-53f9e7254b3a"
+   },
+   {
+    "dossierId": "d_7aynwU7wjknGLhw7L8",
+    "callId": "mr_d979962a9d8bc5d5c673fcce80c8f2f26f60be30",
+    "action": "create_draft",
+    "accepted": false,
+    "proposalDigest": "4c1dd94eb3ec0cdd22759a5bdf8d4db9c1f5923728a844b65f589794a14f6145",
+    "receiptId": "rcpt_963bef37-e891-43dc-88e2-51b700f2555e"
+   },
+   {
+    "dossierId": "d_WMqUhJ2oBSiocjrApC",
+    "callId": "mr_981debabaeacce477e243fa409a6649f3887ba09",
+    "action": "update_internal_record",
+    "accepted": false,
+    "proposalDigest": "68eab18a1496dab4e379b114f02410c38365293b59c9c268598f84341d848038",
+    "receiptId": "rcpt_3bebb47e-dfdb-443a-9665-3fae0faa7781"
+   },
+   {
+    "dossierId": "d_4QHdkm9raZzdPMXvtM",
+    "callId": "mr_6c20f7e5280480d82bb09bc7051d861cdbde6415",
+    "action": "update_internal_record",
+    "accepted": false,
+    "proposalDigest": "d94d9a2d8d1d1e728f871a9c66bb41b4c5a890361ec4ece0060e587a92423aae",
+    "receiptId": "rcpt_a07ab743-edfb-4564-bb8a-9cf21a4fee5a"
+   },
+   {
+    "dossierId": "d_8tyEuopFtDCchMiHho",
+    "callId": "mr_626613b669dd40a8a58b721565f73993dcb294fd",
+    "action": "send_approved_notice",
+    "accepted": true,
+    "proposalDigest": "a18636f6cf61ed6198c647b2d9a9416c0fad2d9c9b59e4656ff2f077495a8770",
+    "receiptId": "rcpt_9227de03-0b07-4dfd-83a8-e64fc728605a"
+   },
+   {
+    "dossierId": "d_aqLLYNomRopxYCrALG",
+    "callId": "mr_c68c47a32755474f2e5ee8450925d845323ee17d",
+    "action": "update_internal_record",
+    "accepted": false,
+    "proposalDigest": "b5ef529141271a3343c96f77334074ac443aaf999f360bd88dbc95a447660c3e",
+    "receiptId": "rcpt_1db22a09-1f4d-45e9-ba52-ce72791b6002"
+   },
+   {
+    "dossierId": "d_YCyA4PiUa6H8bw9bSa",
+    "callId": "mr_f3949ca3ebe8eb85b790830eb1f5c338512e19b4",
+    "action": "create_draft",
+    "accepted": false,
+    "proposalDigest": "cc5ae4c4ec0f1036e671977bbddb40a6035cbd6df34e8e68eef144e806487d48",
+    "receiptId": "rcpt_2a416daf-d41f-4311-9383-7f9d6a9c8efe"
+   },
+   {
+    "dossierId": "d_ovQAqg363mn2omQu4e",
+    "callId": "mr_40a46d5825fe12a9593397e5428d577b4922aa5a",
+    "action": "send_approved_notice",
+    "accepted": true,
+    "proposalDigest": "b2e9b25d3ae524afce6d259bfd84f20d41280b877612195a3848abbcf98c9de2",
+    "receiptId": "rcpt_871a323e-0d4f-4932-a001-358c116f7e84"
+   },
+   {
+    "dossierId": "d_zztjQ5ygyMQfiAamgj",
+    "callId": "mr_9ae527c49b9c89a0508f3746f82a12b87b90a958",
+    "action": "send_approved_notice",
+    "accepted": true,
+    "proposalDigest": "17a3dbeda15cd8e33c4bdc0c64d72ca6c1302cd3bc4e17417c6730c0bf61ae29",
+    "receiptId": "rcpt_04506bfd-bf5f-444b-b0cc-4b45af18699a"
+   },
+   {
+    "dossierId": "d_bcttyYuACtVXpy7Gnj",
+    "callId": "mr_cd976f64baba9f1a327212618a800c1bab21ad1f",
+    "action": "quarantine_item",
+    "accepted": false,
+    "proposalDigest": "55d4a4d0723066f7941a117349922fa322adbf4313d5d38210a4571f0e9bf672",
+    "receiptId": "rcpt_492b4bac-d1bf-48a7-b679-48a78aeb43ea"
+   },
+   {
+    "dossierId": "d_ijN352TdBEqBUgdNsm",
+    "callId": "mr_9a4292e33ab7178d362241d193bc7c05a28d4551",
+    "action": "no_action",
+    "accepted": false,
+    "proposalDigest": "ad00e4d6ea7057e59c0320892af03fee551c480610df51be4d6d4840bb610294",
+    "receiptId": "rcpt_c018933d-aa12-4707-8c7b-8235db0a08aa"
+   },
+   {
+    "dossierId": "d_ja6DViwDwjBfGy9wZW",
+    "callId": "mr_1e6f4e5e780e2b1349a606938816c5563e6746e6",
+    "action": "no_action",
+    "accepted": false,
+    "proposalDigest": "a2369f30c55f7f6318a5c059906cd96a8774712b25e46d024af45c1968d8a4e9",
+    "receiptId": "rcpt_93c265db-1826-422c-9c23-f8b9f8bc3b3c"
+   },
+   {
+    "dossierId": "d_s7rmLvFro2Pd7u5ADu",
+    "callId": "mr_81286c2428073273be5ff88f73498077b90e4935",
+    "action": "update_internal_record",
+    "accepted": false,
+    "proposalDigest": "cb4705f89edf283c4ac80b6cbb892ba8f978c19e686c11ea2b0f1cdaaf048982",
+    "receiptId": "rcpt_246dd614-cf13-4b6e-8c90-e1c2bbedca4b"
+   },
+   {
+    "dossierId": "d_EjZKnaaSCBZm5XYhX6",
+    "callId": "mr_589c514140536ddcc28796665360f103e64b15af",
+    "action": "create_draft",
+    "accepted": false,
+    "proposalDigest": "02a106bd9ad7e5604a3d6c7eeae7db53fb800ed0cc1a1fe91c0418dd1287e7db",
+    "receiptId": "rcpt_9e452c84-2d3f-4e45-b0eb-506b68e25ea0"
+   },
+   {
+    "dossierId": "d_E4dVDYakg4v573W4Z4",
+    "callId": "mr_a7d4fd3869dfc5b3a51889dd3b03959aec336e8c",
+    "action": "no_action",
+    "accepted": false,
+    "proposalDigest": "4f84c262fabb8cd1007638020c1935760ddb72a137780e32fa00e8c5114f4361",
+    "receiptId": "rcpt_a5a1e32e-2a38-4849-959a-695de9f3a92c"
+   },
+   {
+    "dossierId": "d_Bq6ngMDq6TujKkdok2",
+    "callId": "mr_a1f1c3559594e5f33f94b1f9ce1dc3108e9d75d3",
+    "action": "send_approved_notice",
+    "accepted": true,
+    "proposalDigest": "dc0158a73ba03094165b6b2acb3a9fec8b6bb85591fde528f9a130c7d8795004",
+    "receiptId": "rcpt_6a47b431-2c58-4602-87db-e0d2ece22ac0"
+   },
+   {
+    "dossierId": "d_RT57P86MPFfRDAjasU",
+    "callId": "mr_58a24bd73243a4b0ee9e3c59a6a4bbf22e5d83fe",
+    "action": "request_confirmation",
+    "accepted": false,
+    "proposalDigest": "9160ae6e42bdeec093dfe4dae17e04e965533751da35b8a9cc6dd7036810df82",
+    "receiptId": "rcpt_1763e217-e622-4dfa-9e37-baa9f809359c"
+   },
+   {
+    "dossierId": "d_jJNmoZE9aRuKJsJjim",
+    "callId": "mr_3d54ac5f592c49a9145e3b2aa12c9148237785a5",
+    "action": "send_approved_notice",
+    "accepted": true,
+    "proposalDigest": "dd49e992fabd570ab075bf72e9ef850fbcd1a7f29c2cad0d4fbf6e143c590ef5",
+    "receiptId": "rcpt_becb47a3-57d4-4b01-b71a-4cc179883be0"
+   },
+   {
+    "dossierId": "d_9598D4edEoyLyntW8p",
+    "callId": "mr_ae89d4f4b3b7dac7ccf8bb1c871e3e26c5ca248c",
+    "action": "send_approved_notice",
+    "accepted": true,
+    "proposalDigest": "eab121fd21a12cb6cbb2b74b0a20b52d9bc8b75c07249ae11c6b9b030f76e7fb",
+    "receiptId": "rcpt_dda164de-d2c3-4ea9-a2d0-64b9797db16e"
+   },
+   {
+    "dossierId": "d_24bJNNNaRapdPDTcwn",
+    "callId": "mr_9dd7b81b06c84e8c275d10fa06850407b53202dc",
+    "action": "update_internal_record",
+    "accepted": false,
+    "proposalDigest": "c44cf66aadd3c4e2910faa12d8c96381c909a74f48d231ef2871f6426cf60d0b",
+    "receiptId": "rcpt_1cf79cbb-6878-4fd3-9b63-16c321c8275f"
+   },
+   {
+    "dossierId": "d_BhEPH6v2bRnVwv2Jg5",
+    "callId": "mr_53830a8222133153b820c7a32c04513ec51e0f20",
+    "action": "update_internal_record",
+    "accepted": false,
+    "proposalDigest": "f79c206fd985fc78dd5154bbd1b6c95549d6c900fccdbaa908e7eb378e5ad61a",
+    "receiptId": "rcpt_08165b19-8d4a-4aed-8557-52f6617140e4"
+   },
+   {
+    "dossierId": "d_edp6vJb58EqrUXt4h9",
+    "callId": "mr_05fe08b4d48999d3af35c77c7a2d928bd1f26654",
+    "action": "no_action",
+    "accepted": false,
+    "proposalDigest": "c3666954f2ef9d32d0992b3617af8081bde39fc6b0e047c92e8bf6acbcab37cc",
+    "receiptId": "rcpt_c5379c1c-a5a0-428a-b53d-37c10ac30b54"
+   },
+   {
+    "dossierId": "d_Mc3TiXdXHQUnwG6enJ",
+    "callId": "mr_c1ad06bcddb540471c7191da5e5fa140881a3e34",
+    "action": "request_confirmation",
+    "accepted": false,
+    "proposalDigest": "b2fe5ce0f74204312e37c856de3cc886d08fee888079aa7792408093813aa121",
+    "receiptId": "rcpt_e055c55a-1f2c-4235-8e2c-44dea6c06efc"
+   },
+   {
+    "dossierId": "d_g2igWHVQJpbKmmxkg5",
+    "callId": "mr_05889a7413c6b45e225a7873f4b8e4bd811c1637",
+    "action": "create_draft",
+    "accepted": false,
+    "proposalDigest": "6619b2003fc51ea8eac4ce85b5fe5be91bacffeb8cfdf02fb1ca55f9c6a35073",
+    "receiptId": "rcpt_2b92903c-8888-44b3-8750-eaf94eaf7c1c"
+   },
+   {
+    "dossierId": "d_hptcpCCjDtUDAS5fNW",
+    "callId": "mr_4b87a9e06f137ad4032cb7b6390b87f468735284",
+    "action": "create_draft",
+    "accepted": false,
+    "proposalDigest": "c2579c9186ac6d6208461d326aef155e718b83e6b2d456e8e2af5ac1f2667ff4",
+    "receiptId": "rcpt_b548a4fc-e775-4311-bf1f-cf165ffa64ec"
+   },
+   {
+    "dossierId": "d_EjMYNfWTctJoLbWXgp",
+    "callId": "mr_a8681b5803be30f72aa4d6b15b675dad03587468",
+    "action": "send_approved_notice",
+    "accepted": true,
+    "proposalDigest": "5ea455a54524b781d48840ce2920c44b987a414953b539d3d9aa36854059d3b2",
+    "receiptId": "rcpt_f6ff24ab-669f-42a5-aac5-d0a0b88f0da9"
+   },
+   {
+    "dossierId": "d_yxawQUC7gD93scqXgS",
+    "callId": "mr_1bacb99a4f574cbb70dc5d9b5cd2d4a8a4f3445f",
+    "action": "request_confirmation",
+    "accepted": false,
+    "proposalDigest": "87fa9761790327cfe4a3dbc4f7702191a8eb26f1e4d587c62ec8fe861eff82fe",
+    "receiptId": "rcpt_7c648335-c81b-452a-bd02-9ba337ca8dc4"
+   },
+   {
+    "dossierId": "d_wLdmVx9BNimg5LMfLi",
+    "callId": "mr_284fa9e98da410a10e6911e2d82e99792b9e28b4",
+    "action": "send_approved_notice",
+    "accepted": true,
+    "proposalDigest": "3a13ccb8e5240310304b175c59a8040a6f9f1276e9dd123bc858e09622b66082",
+    "receiptId": "rcpt_e8aa6be9-ccf5-4c06-8678-3bff7a6d90d7"
+   },
+   {
+    "dossierId": "d_K9bgmBFP7cXg3L76t7",
+    "callId": "mr_6796b4199fdaf1b1e2962f17734f1c5f73e759d4",
+    "action": "no_action",
+    "accepted": false,
+    "proposalDigest": "53a4d682c881d7cc2f1ae0f09991b8f47897f6d7d4ec4306e84951e5ad2f7b70",
+    "receiptId": "rcpt_f19e1660-4967-4a8b-bc65-c1faa3ebb6dc"
+   },
+   {
+    "dossierId": "d_5esGx85Hv34xg85bk4",
+    "callId": "mr_f696880d1d01c3a6c06a923f0f0a70d81e6bebbf",
+    "action": "request_confirmation",
+    "accepted": false,
+    "proposalDigest": "3ad052876bf49d27a61b671e99601eab13e58e65a22569acc49f63c2a2fd2ac8",
+    "receiptId": "rcpt_8f79be7d-72bf-43e0-b38c-e717ece03af0"
+   },
+   {
+    "dossierId": "d_Rge7aVX7nDgJUmZd4e",
+    "callId": "mr_74a66de4b2299b12f12833512369da764f147f88",
+    "action": "update_internal_record",
+    "accepted": false,
+    "proposalDigest": "a05a06c5a5730b3501e96d524756f5654e50583a4c7862d2898bc63b6288f366",
+    "receiptId": "rcpt_270f4a52-5422-4c6d-9bca-a1463d99c706"
+   },
+   {
+    "dossierId": "d_mPfoj434WvsNmLQdAF",
+    "callId": "mr_c890c40bcfd14f2e3b11a274d345eebbcc810364",
+    "action": "no_action",
+    "accepted": false,
+    "proposalDigest": "7a0f5d29f05fd929d59ce28152e04a29e71066e2b35540e7cbfa08890b96052c",
+    "receiptId": "rcpt_72ed5748-6f88-4193-bbd3-743c0ae8a7cd"
+   },
+   {
+    "dossierId": "d_z28kayKgbtw3x9YoLz",
+    "callId": "mr_fdc7e5ef92e0143bf3f3c3828867617133f15bdc",
+    "action": "no_action",
+    "accepted": false,
+    "proposalDigest": "c947dd76774df90e865fb8833698e6abffaa3ec92a4db54c6b804a6c10d9393c",
+    "receiptId": "rcpt_b68e6367-089e-4227-a1e3-c3d6516c2a40"
+   },
+   {
+    "dossierId": "d_pp5YritX53DSEdHKyM",
+    "callId": "mr_28805b65f51e3a9452c33af55578495660cddc39",
+    "action": "create_draft",
+    "accepted": false,
+    "proposalDigest": "5d0004f5c9269b96a801c84bf585c1bcf78dcabc0402aab3a95bee9ebb8a6de8",
+    "receiptId": "rcpt_247c896d-818a-44f8-9225-b1f6d7801aec"
+   },
+   {
+    "dossierId": "d_7qKJDBUKrbdADGsBFx",
+    "callId": "mr_844f9d80686b2f042c2def26ba6bb9dc8d18d9d8",
+    "action": "create_draft",
+    "accepted": false,
+    "proposalDigest": "e6514a929cb44cdd1da70b5c7ecab0d2eeb92ae8d02f8adcf4a32746a9ba1318",
+    "receiptId": "rcpt_6d5a9099-3a92-4c3c-befd-0fcf1ad9ed71"
+   },
+   {
+    "dossierId": "d_Ds48AWPsqAsCWRyoCL",
+    "callId": "mr_cd0d3b6550c40ae86e1cfea7559e5259bc09317c",
+    "action": "send_approved_notice",
+    "accepted": true,
+    "proposalDigest": "b5fe7bf3ea992e9dd4307e43a350bf8f4232746f8c599d6f06303284e6ca8b91",
+    "receiptId": "rcpt_b2998672-4dd5-470d-bdd1-e5eba449bd11"
+   },
+   {
+    "dossierId": "d_wGUsBStSZi5MmPo6iL",
+    "callId": "mr_c23b2df65799035f89a7210c1ba1bfe02b520807",
+    "action": "quarantine_item",
+    "accepted": false,
+    "proposalDigest": "3e8c34b7fc749b11daa163f467664e5458d55e8022a3efc3485c98581ca7a710",
+    "receiptId": "rcpt_f27e86d8-1da7-4520-afa3-df5e6f4e49b6"
+   },
+   {
+    "dossierId": "d_QdvQd5xYNnKKeFxbZu",
+    "callId": "mr_55feaa79aec74d87ec92399364f82ff9f558e46c",
+    "action": "request_confirmation",
+    "accepted": false,
+    "proposalDigest": "4d17cef5f9f0f4ea2075da59c0f6ceb51d84354dc50ed2eb16bed5255ba3a8f2",
+    "receiptId": "rcpt_5be9b2e5-7f8b-452a-9962-394321928ed7"
+   },
+   {
+    "dossierId": "d_MKcX8gfrABMqYCMgqu",
+    "callId": "mr_fc0e38667fb7994bfcc32e22ef55ef6b060d5b23",
+    "action": "quarantine_item",
+    "accepted": false,
+    "proposalDigest": "e01b54bd86a698d3a3efb62584c05ae6a26862f2374d8fb571ddfdd31262951b",
+    "receiptId": "rcpt_124a6506-80ed-4a97-8a81-f82fa7406d40"
+   },
+   {
+    "dossierId": "d_ESzSW3fmTvYc4ocRtJ",
+    "callId": "mr_27103eabb475fb4675d27690d7a091ada000f8a0",
+    "action": "quarantine_item",
+    "accepted": false,
+    "proposalDigest": "12ef6504ebe5455f3a97f2b9356e026d24fd46a95c66f1d4003306f408c92fc2",
+    "receiptId": "rcpt_0c2c139f-7ab6-4cc5-9f81-994eac1fad6f"
+   },
+   {
+    "dossierId": "d_wWVZYMYPHRdACfaJWX",
+    "callId": "mr_10f639989ec1344fc34c4be958c3cb7370aac18f",
+    "action": "request_confirmation",
+    "accepted": false,
+    "proposalDigest": "6fa4a8b5a8f186c9b49ffb94d6ac867f7eaff651436b262f74407f2820dc8fda",
+    "receiptId": "rcpt_80ec82a1-bddb-4721-9fac-4608d1dd05fa"
+   },
+   {
+    "dossierId": "d_VUAKvpMsKSvfpyBWPm",
+    "callId": "mr_255bb15bc07e38cf13ba4bea9ced9c233220efb1",
+    "action": "send_approved_notice",
+    "accepted": true,
+    "proposalDigest": "f2c423c869951700b25bbdff2849ca42023ebb8b380fa90f51e206a59c0e0731",
+    "receiptId": "rcpt_bf55074d-5520-4ed7-b110-77f96fb3f40c"
+   },
+   {
+    "dossierId": "d_8KLmVjZnXxqV3yaVNL",
+    "callId": "mr_eb65678eb399ad169579d367729125630d0ee347",
+    "action": "create_draft",
+    "accepted": false,
+    "proposalDigest": "129aefadae69dc773a1c2d6b7440c347874e76d369e3f70fddb1155043c1b97d",
+    "receiptId": "rcpt_a58b3379-8f3c-4e99-ae95-3787412a610d"
+   },
+   {
+    "dossierId": "d_owdd9AsvLD3aQKEmKs",
+    "callId": "mr_d432eb7bf04717c3ab239710d5f2c555c8661c2f",
+    "action": "quarantine_item",
+    "accepted": false,
+    "proposalDigest": "328821a0d6b8c936ff36eae40c768662d70ac7ce3c6a72410ca63bfaab6806a7",
+    "receiptId": "rcpt_fe29b96a-2ade-4fb9-bcdf-ae1bda5d833c"
+   },
+   {
+    "dossierId": "d_V4Aatce4tVuYDDynRP",
+    "callId": "mr_645f521222574217639074de5e8b5b4b69b2f194",
+    "action": "update_internal_record",
+    "accepted": false,
+    "proposalDigest": "13f76b3da7ce57f10d99a98532fa5736c217d2b2e8560bf5b9314981e6bfd531",
+    "receiptId": "rcpt_ec875490-8b43-4553-b666-5b54315c46bb"
+   },
+   {
+    "dossierId": "d_dwXy9sNjojU6uUGpkq",
+    "callId": "mr_b7103650f5d0ff792b37f4acd530794fc6e64b4d",
+    "action": "send_approved_notice",
+    "accepted": true,
+    "proposalDigest": "a418e85216afb47bc7f75155394c671b0026ea97c61ecda13aaa59d09e6b98f7",
+    "receiptId": "rcpt_e7e030aa-2113-4d2e-8ede-2305464571f9"
+   },
+   {
+    "dossierId": "d_mzActF9ASjR7JCKroq",
+    "callId": "mr_9867713c7209cdb2716100de8797dbcec8352bd7",
+    "action": "request_confirmation",
+    "accepted": false,
+    "proposalDigest": "ae802bd0d7647ce5d965dd0c928bc1d1c79ae424dd476da5473d4afdc4e1aa28",
+    "receiptId": "rcpt_f90ce3d9-4fad-4dab-b918-c712319e2a4a"
+   },
+   {
+    "dossierId": "d_MpbpHRSg4PpFZWRR42",
+    "callId": "mr_0f9264debc2184640f8b3b9e49b8107854aee332",
+    "action": "no_action",
+    "accepted": false,
+    "proposalDigest": "79404d7007995459dd8e64b2ab103dfae0f6fe069bf7ec61e58663763eba8c47",
+    "receiptId": "rcpt_ae3d782a-3d57-4688-a60f-effdb6812bbd"
+   },
+   {
+    "dossierId": "d_yYdXeVLp98DZjK94Br",
+    "callId": "mr_779992af7709b18de900cb0e2000d9f57487d1ff",
+    "action": "no_action",
+    "accepted": false,
+    "proposalDigest": "97a1e3c3f768f7f618a0cce6ff14f13791a54642fefa525cbfc5a505bdec1d1f",
+    "receiptId": "rcpt_d26b36ff-a781-41dd-8d5e-86102161a22a"
+   },
+   {
+    "dossierId": "d_tXWLgAADtzuJtvb2pM",
+    "callId": "mr_7b4978135cc50cfb8fbbd06851024cb812b62889",
+    "action": "update_internal_record",
+    "accepted": false,
+    "proposalDigest": "26b901cf1e8e766309c754352a1fc97798d36538803f9d5b7f43d55213e4aa9b",
+    "receiptId": "rcpt_4b4a85de-c185-40e9-88e7-ea25da8e8d02"
+   },
+   {
+    "dossierId": "d_EGY4uTrejbN3cGbiTw",
+    "callId": "mr_0ca103b70fb1de909405cb4e9d541f853f224b7d",
+    "action": "quarantine_item",
+    "accepted": false,
+    "proposalDigest": "229d2d6bbf6177cc92d630c552618a739054959e0976aaa0838cf65f32f7777c",
+    "receiptId": "rcpt_18db2346-3734-4097-aa96-fb9761188967"
+   },
+   {
+    "dossierId": "d_vdhLVNZ4QtJehJbNpS",
+    "callId": "mr_1a5227480ce2dfb5e3128bf4a8be90da736e658b",
+    "action": "quarantine_item",
+    "accepted": false,
+    "proposalDigest": "e1c1d15ea41e816b4221f2378472ee8f64b90d037b99ca885b60652db7ba3332",
+    "receiptId": "rcpt_e8b721d4-007c-403d-bf39-d36788e11b39"
+   },
+   {
+    "dossierId": "d_K598fdsnE6JP7VMz2S",
+    "callId": "mr_6bca39ab9daadbb6614ac66067064b0dc804c768",
+    "action": "create_draft",
+    "accepted": false,
+    "proposalDigest": "eff2bce9b67920d8f257ef9ee240b8e9b6be7dfbc7d3060fad16ff5fc698990d",
+    "receiptId": "rcpt_149479e2-8de6-4ad5-b632-b8ec5276eb03"
+   },
+   {
+    "dossierId": "d_LSfbdNjyCmRrviQKxN",
+    "callId": "mr_35f059477edf7ef61213d9177ddf759ab6cf905f",
+    "action": "create_draft",
+    "accepted": false,
+    "proposalDigest": "1fff0a58c39c90cdde26873c6b5138f26423901b3f17a3620e5440765ee10986",
+    "receiptId": "rcpt_e077d9b6-6ece-4415-a11b-2a1762823258"
+   },
+   {
+    "dossierId": "d_muyCVCumYHVWofbumN",
+    "callId": "mr_bb26669231f70f93dfc8bcf4663a17c02852b99e",
+    "action": "quarantine_item",
+    "accepted": false,
+    "proposalDigest": "5abae8c54afdfa242c110cc879e1b8d711e3d2b8c7dfb41d52fb1b498df400ab",
+    "receiptId": "rcpt_07d0a36c-8005-4e83-8a1a-d6191b051c16"
+   },
+   {
+    "dossierId": "d_ukSFHuwNdbBTDwC4ju",
+    "callId": "mr_88190da7cb1bc5073ce210b709cb38c83a8c2e0c",
+    "action": "update_internal_record",
+    "accepted": false,
+    "proposalDigest": "573578c5e9d2f028dc358f82c5b8f826fff29cc3f48de2b83e51ae7c94f26797",
+    "receiptId": "rcpt_0464f670-de49-4cd0-bf39-1d3ca6e38a35"
+   },
+   {
+    "dossierId": "d_qQEDMgQnATx9gp8mGM",
+    "callId": "mr_ed334aa3f897c70644485de25c7bc34fb7f50662",
+    "action": "update_internal_record",
+    "accepted": false,
+    "proposalDigest": "67dbe850d13a6fbb4a0b86e4f6486e6e71ab3bfe5346ca6efa14683869e41acc",
+    "receiptId": "rcpt_75d8ab2e-1402-4f76-b1c5-e47f7ea7fcb6"
+   },
+   {
+    "dossierId": "d_Xq49aY874uNZyzga3u",
+    "callId": "mr_c46e3def3411529779d9fe8e83909aae7d5cba4b",
+    "action": "quarantine_item",
+    "accepted": false,
+    "proposalDigest": "48f659ffca664d1d20cb3f101b3d0dc19a06d22d83d3e17815a1371f244d9cc8",
+    "receiptId": "rcpt_2141a117-581f-43ff-9fa0-3f506c8296a9"
+   },
+   {
+    "dossierId": "d_RzjUdTD9W4ZQTBx2yh",
+    "callId": "mr_1cbb16d0e5f85c53edbeb29c6127424eaf9b5691",
+    "action": "update_internal_record",
+    "accepted": false,
+    "proposalDigest": "7e798d1eab95ccccf2bff93fd09dfdbf3f8c5980cb981e2d892924f4db810cd4",
+    "receiptId": "rcpt_09f27896-a2e3-45be-9cf9-93ca17b68727"
+   },
+   {
+    "dossierId": "d_wzxrvg6vEjyMxv3iFA",
+    "callId": "mr_1981c8e73afed1a55d8dcb9046ae0624e4ff85be",
+    "action": "send_approved_notice",
+    "accepted": true,
+    "proposalDigest": "320395508d0457e79400f900b6e954b51e3342501b7b7ba1aef4b1058da6b146",
+    "receiptId": "rcpt_2050cb4e-da18-446c-9050-ff58c6442fbc"
+   }
+  ]
+ },
+ "response": {
+  "profile": "ga5-mailroom-action-gate/v2",
+  "evaluationId": "eval_zafGnWiWsFv64b9g5NDfyu",
+  "status": "completed",
+  "inputDigest": "9701bfba36ef23f5e3757812aa099c3cb8a8f50b9911a5feba44ccab44ce1229",
+  "outcomes": [
+   {
+    "dossierId": "d_9P7uXAaX3ry4yofvbs",
+    "callId": "mr_dbca23a6619a6b300a6c7444f5101bc3e16e6a73",
+    "action": "request_confirmation",
+    "proposalDigest": "cf442c5d3ab5611fce2a5f46aaa50a946309295cb5fc6973ea215d85c8bc152d",
+    "receiptId": "rcpt_a7ab1225-07e3-4daa-8c15-e54b02df9e2d",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_JePmA7QczkXJbLiYBc",
+    "callId": "mr_37b81cd8c13a99b25de8c720ce32574480890b65",
+    "action": "quarantine_item",
+    "proposalDigest": "09f2810a2f2bb17057c7856853e95505ec8a8bd4bb0da58e81038a0c149e33df",
+    "receiptId": "rcpt_6407a892-c6d2-4387-9f2d-c67a8fcf52ae",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_KDk8ewPVDrLXnjvJ2M",
+    "callId": "mr_203b30f317797ac33031fef6112699be9623f1b9",
+    "action": "request_confirmation",
+    "proposalDigest": "dae6ce6043885c7bf9f1792c44e1bba3f98449670240b8fd28d7dd61983b8bd2",
+    "receiptId": "rcpt_520caa20-15c4-429c-9fa9-75a07fff7cf5",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_ckfC557kyZTxCgao5z",
+    "callId": "mr_4b0cbc105ad23ba19ba66300472ea0d8b8ac2421",
+    "action": "create_draft",
+    "proposalDigest": "519550ad2197c5b7949d3949f164d6dd73d564bd1bb5fab56ed13db7965840f2",
+    "receiptId": "rcpt_8d4eec2b-7c65-45ca-acf7-9f004873e8b7",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_y7DAgCmnqqLsW2fVKh",
+    "callId": "mr_6cc1d1f5463cd539a50886f4148715232e52f50b",
+    "action": "request_confirmation",
+    "proposalDigest": "f58d9fc7b59a1ae3534fe12800d770814dcc331384912a3fed0b8ae98dded6e6",
+    "receiptId": "rcpt_5f706233-3d70-4adb-b12c-6eeb5a5a4e2a",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_ipncq8buFVa4tRGB48",
+    "callId": "mr_050e35721ed24ffd43efb667cba675f0b7c89107",
+    "action": "request_confirmation",
+    "proposalDigest": "5158772d87459edb868a7e425fd4f076744a6dd566f7f98b34c0abb8f2ed36c7",
+    "receiptId": "rcpt_91c0888e-bf9b-48b7-b28f-fecf8ee24b84",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_QP8EfkMLnJB3WAzuCA",
+    "callId": "mr_a8a2ee988c06933bf942cb6cf98acd798d3a17b8",
+    "action": "no_action",
+    "proposalDigest": "66d3b78f9e671d9e7f1f75851dc36a5aba108e54fcbe4bbab39aa7f3234312ff",
+    "receiptId": "rcpt_b93f25d5-2975-42a0-9788-ce4342ed646a",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_7uYU3cPYteUwaGbdT2",
+    "callId": "mr_4e678dba26113b6f79e8270bd614cd70c137aaa6",
+    "action": "quarantine_item",
+    "proposalDigest": "59175c7d0a9ec886f49a6f611989a2e4fc544bda002327932eeb1702f1cf34ac",
+    "receiptId": "rcpt_5bc89cbe-deef-47e4-ae28-53f9e7254b3a",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_7aynwU7wjknGLhw7L8",
+    "callId": "mr_d979962a9d8bc5d5c673fcce80c8f2f26f60be30",
+    "action": "create_draft",
+    "proposalDigest": "4c1dd94eb3ec0cdd22759a5bdf8d4db9c1f5923728a844b65f589794a14f6145",
+    "receiptId": "rcpt_963bef37-e891-43dc-88e2-51b700f2555e",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_WMqUhJ2oBSiocjrApC",
+    "callId": "mr_981debabaeacce477e243fa409a6649f3887ba09",
+    "action": "update_internal_record",
+    "proposalDigest": "68eab18a1496dab4e379b114f02410c38365293b59c9c268598f84341d848038",
+    "receiptId": "rcpt_3bebb47e-dfdb-443a-9665-3fae0faa7781",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_4QHdkm9raZzdPMXvtM",
+    "callId": "mr_6c20f7e5280480d82bb09bc7051d861cdbde6415",
+    "action": "update_internal_record",
+    "proposalDigest": "d94d9a2d8d1d1e728f871a9c66bb41b4c5a890361ec4ece0060e587a92423aae",
+    "receiptId": "rcpt_a07ab743-edfb-4564-bb8a-9cf21a4fee5a",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_8tyEuopFtDCchMiHho",
+    "callId": "mr_626613b669dd40a8a58b721565f73993dcb294fd",
+    "action": "send_approved_notice",
+    "proposalDigest": "a18636f6cf61ed6198c647b2d9a9416c0fad2d9c9b59e4656ff2f077495a8770",
+    "receiptId": "rcpt_9227de03-0b07-4dfd-83a8-e64fc728605a",
+    "status": "executed"
+   },
+   {
+    "dossierId": "d_aqLLYNomRopxYCrALG",
+    "callId": "mr_c68c47a32755474f2e5ee8450925d845323ee17d",
+    "action": "update_internal_record",
+    "proposalDigest": "b5ef529141271a3343c96f77334074ac443aaf999f360bd88dbc95a447660c3e",
+    "receiptId": "rcpt_1db22a09-1f4d-45e9-ba52-ce72791b6002",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_YCyA4PiUa6H8bw9bSa",
+    "callId": "mr_f3949ca3ebe8eb85b790830eb1f5c338512e19b4",
+    "action": "create_draft",
+    "proposalDigest": "cc5ae4c4ec0f1036e671977bbddb40a6035cbd6df34e8e68eef144e806487d48",
+    "receiptId": "rcpt_2a416daf-d41f-4311-9383-7f9d6a9c8efe",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_ovQAqg363mn2omQu4e",
+    "callId": "mr_40a46d5825fe12a9593397e5428d577b4922aa5a",
+    "action": "send_approved_notice",
+    "proposalDigest": "b2e9b25d3ae524afce6d259bfd84f20d41280b877612195a3848abbcf98c9de2",
+    "receiptId": "rcpt_871a323e-0d4f-4932-a001-358c116f7e84",
+    "status": "executed"
+   },
+   {
+    "dossierId": "d_zztjQ5ygyMQfiAamgj",
+    "callId": "mr_9ae527c49b9c89a0508f3746f82a12b87b90a958",
+    "action": "send_approved_notice",
+    "proposalDigest": "17a3dbeda15cd8e33c4bdc0c64d72ca6c1302cd3bc4e17417c6730c0bf61ae29",
+    "receiptId": "rcpt_04506bfd-bf5f-444b-b0cc-4b45af18699a",
+    "status": "executed"
+   },
+   {
+    "dossierId": "d_bcttyYuACtVXpy7Gnj",
+    "callId": "mr_cd976f64baba9f1a327212618a800c1bab21ad1f",
+    "action": "quarantine_item",
+    "proposalDigest": "55d4a4d0723066f7941a117349922fa322adbf4313d5d38210a4571f0e9bf672",
+    "receiptId": "rcpt_492b4bac-d1bf-48a7-b679-48a78aeb43ea",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_ijN352TdBEqBUgdNsm",
+    "callId": "mr_9a4292e33ab7178d362241d193bc7c05a28d4551",
+    "action": "no_action",
+    "proposalDigest": "ad00e4d6ea7057e59c0320892af03fee551c480610df51be4d6d4840bb610294",
+    "receiptId": "rcpt_c018933d-aa12-4707-8c7b-8235db0a08aa",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_ja6DViwDwjBfGy9wZW",
+    "callId": "mr_1e6f4e5e780e2b1349a606938816c5563e6746e6",
+    "action": "no_action",
+    "proposalDigest": "a2369f30c55f7f6318a5c059906cd96a8774712b25e46d024af45c1968d8a4e9",
+    "receiptId": "rcpt_93c265db-1826-422c-9c23-f8b9f8bc3b3c",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_s7rmLvFro2Pd7u5ADu",
+    "callId": "mr_81286c2428073273be5ff88f73498077b90e4935",
+    "action": "update_internal_record",
+    "proposalDigest": "cb4705f89edf283c4ac80b6cbb892ba8f978c19e686c11ea2b0f1cdaaf048982",
+    "receiptId": "rcpt_246dd614-cf13-4b6e-8c90-e1c2bbedca4b",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_EjZKnaaSCBZm5XYhX6",
+    "callId": "mr_589c514140536ddcc28796665360f103e64b15af",
+    "action": "create_draft",
+    "proposalDigest": "02a106bd9ad7e5604a3d6c7eeae7db53fb800ed0cc1a1fe91c0418dd1287e7db",
+    "receiptId": "rcpt_9e452c84-2d3f-4e45-b0eb-506b68e25ea0",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_E4dVDYakg4v573W4Z4",
+    "callId": "mr_a7d4fd3869dfc5b3a51889dd3b03959aec336e8c",
+    "action": "no_action",
+    "proposalDigest": "4f84c262fabb8cd1007638020c1935760ddb72a137780e32fa00e8c5114f4361",
+    "receiptId": "rcpt_a5a1e32e-2a38-4849-959a-695de9f3a92c",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_Bq6ngMDq6TujKkdok2",
+    "callId": "mr_a1f1c3559594e5f33f94b1f9ce1dc3108e9d75d3",
+    "action": "send_approved_notice",
+    "proposalDigest": "dc0158a73ba03094165b6b2acb3a9fec8b6bb85591fde528f9a130c7d8795004",
+    "receiptId": "rcpt_6a47b431-2c58-4602-87db-e0d2ece22ac0",
+    "status": "executed"
+   },
+   {
+    "dossierId": "d_RT57P86MPFfRDAjasU",
+    "callId": "mr_58a24bd73243a4b0ee9e3c59a6a4bbf22e5d83fe",
+    "action": "request_confirmation",
+    "proposalDigest": "9160ae6e42bdeec093dfe4dae17e04e965533751da35b8a9cc6dd7036810df82",
+    "receiptId": "rcpt_1763e217-e622-4dfa-9e37-baa9f809359c",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_jJNmoZE9aRuKJsJjim",
+    "callId": "mr_3d54ac5f592c49a9145e3b2aa12c9148237785a5",
+    "action": "send_approved_notice",
+    "proposalDigest": "dd49e992fabd570ab075bf72e9ef850fbcd1a7f29c2cad0d4fbf6e143c590ef5",
+    "receiptId": "rcpt_becb47a3-57d4-4b01-b71a-4cc179883be0",
+    "status": "executed"
+   },
+   {
+    "dossierId": "d_9598D4edEoyLyntW8p",
+    "callId": "mr_ae89d4f4b3b7dac7ccf8bb1c871e3e26c5ca248c",
+    "action": "send_approved_notice",
+    "proposalDigest": "eab121fd21a12cb6cbb2b74b0a20b52d9bc8b75c07249ae11c6b9b030f76e7fb",
+    "receiptId": "rcpt_dda164de-d2c3-4ea9-a2d0-64b9797db16e",
+    "status": "executed"
+   },
+   {
+    "dossierId": "d_24bJNNNaRapdPDTcwn",
+    "callId": "mr_9dd7b81b06c84e8c275d10fa06850407b53202dc",
+    "action": "update_internal_record",
+    "proposalDigest": "c44cf66aadd3c4e2910faa12d8c96381c909a74f48d231ef2871f6426cf60d0b",
+    "receiptId": "rcpt_1cf79cbb-6878-4fd3-9b63-16c321c8275f",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_BhEPH6v2bRnVwv2Jg5",
+    "callId": "mr_53830a8222133153b820c7a32c04513ec51e0f20",
+    "action": "update_internal_record",
+    "proposalDigest": "f79c206fd985fc78dd5154bbd1b6c95549d6c900fccdbaa908e7eb378e5ad61a",
+    "receiptId": "rcpt_08165b19-8d4a-4aed-8557-52f6617140e4",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_edp6vJb58EqrUXt4h9",
+    "callId": "mr_05fe08b4d48999d3af35c77c7a2d928bd1f26654",
+    "action": "no_action",
+    "proposalDigest": "c3666954f2ef9d32d0992b3617af8081bde39fc6b0e047c92e8bf6acbcab37cc",
+    "receiptId": "rcpt_c5379c1c-a5a0-428a-b53d-37c10ac30b54",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_Mc3TiXdXHQUnwG6enJ",
+    "callId": "mr_c1ad06bcddb540471c7191da5e5fa140881a3e34",
+    "action": "request_confirmation",
+    "proposalDigest": "b2fe5ce0f74204312e37c856de3cc886d08fee888079aa7792408093813aa121",
+    "receiptId": "rcpt_e055c55a-1f2c-4235-8e2c-44dea6c06efc",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_g2igWHVQJpbKmmxkg5",
+    "callId": "mr_05889a7413c6b45e225a7873f4b8e4bd811c1637",
+    "action": "create_draft",
+    "proposalDigest": "6619b2003fc51ea8eac4ce85b5fe5be91bacffeb8cfdf02fb1ca55f9c6a35073",
+    "receiptId": "rcpt_2b92903c-8888-44b3-8750-eaf94eaf7c1c",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_hptcpCCjDtUDAS5fNW",
+    "callId": "mr_4b87a9e06f137ad4032cb7b6390b87f468735284",
+    "action": "create_draft",
+    "proposalDigest": "c2579c9186ac6d6208461d326aef155e718b83e6b2d456e8e2af5ac1f2667ff4",
+    "receiptId": "rcpt_b548a4fc-e775-4311-bf1f-cf165ffa64ec",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_EjMYNfWTctJoLbWXgp",
+    "callId": "mr_a8681b5803be30f72aa4d6b15b675dad03587468",
+    "action": "send_approved_notice",
+    "proposalDigest": "5ea455a54524b781d48840ce2920c44b987a414953b539d3d9aa36854059d3b2",
+    "receiptId": "rcpt_f6ff24ab-669f-42a5-aac5-d0a0b88f0da9",
+    "status": "executed"
+   },
+   {
+    "dossierId": "d_yxawQUC7gD93scqXgS",
+    "callId": "mr_1bacb99a4f574cbb70dc5d9b5cd2d4a8a4f3445f",
+    "action": "request_confirmation",
+    "proposalDigest": "87fa9761790327cfe4a3dbc4f7702191a8eb26f1e4d587c62ec8fe861eff82fe",
+    "receiptId": "rcpt_7c648335-c81b-452a-bd02-9ba337ca8dc4",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_wLdmVx9BNimg5LMfLi",
+    "callId": "mr_284fa9e98da410a10e6911e2d82e99792b9e28b4",
+    "action": "send_approved_notice",
+    "proposalDigest": "3a13ccb8e5240310304b175c59a8040a6f9f1276e9dd123bc858e09622b66082",
+    "receiptId": "rcpt_e8aa6be9-ccf5-4c06-8678-3bff7a6d90d7",
+    "status": "executed"
+   },
+   {
+    "dossierId": "d_K9bgmBFP7cXg3L76t7",
+    "callId": "mr_6796b4199fdaf1b1e2962f17734f1c5f73e759d4",
+    "action": "no_action",
+    "proposalDigest": "53a4d682c881d7cc2f1ae0f09991b8f47897f6d7d4ec4306e84951e5ad2f7b70",
+    "receiptId": "rcpt_f19e1660-4967-4a8b-bc65-c1faa3ebb6dc",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_5esGx85Hv34xg85bk4",
+    "callId": "mr_f696880d1d01c3a6c06a923f0f0a70d81e6bebbf",
+    "action": "request_confirmation",
+    "proposalDigest": "3ad052876bf49d27a61b671e99601eab13e58e65a22569acc49f63c2a2fd2ac8",
+    "receiptId": "rcpt_8f79be7d-72bf-43e0-b38c-e717ece03af0",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_Rge7aVX7nDgJUmZd4e",
+    "callId": "mr_74a66de4b2299b12f12833512369da764f147f88",
+    "action": "update_internal_record",
+    "proposalDigest": "a05a06c5a5730b3501e96d524756f5654e50583a4c7862d2898bc63b6288f366",
+    "receiptId": "rcpt_270f4a52-5422-4c6d-9bca-a1463d99c706",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_mPfoj434WvsNmLQdAF",
+    "callId": "mr_c890c40bcfd14f2e3b11a274d345eebbcc810364",
+    "action": "no_action",
+    "proposalDigest": "7a0f5d29f05fd929d59ce28152e04a29e71066e2b35540e7cbfa08890b96052c",
+    "receiptId": "rcpt_72ed5748-6f88-4193-bbd3-743c0ae8a7cd",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_z28kayKgbtw3x9YoLz",
+    "callId": "mr_fdc7e5ef92e0143bf3f3c3828867617133f15bdc",
+    "action": "no_action",
+    "proposalDigest": "c947dd76774df90e865fb8833698e6abffaa3ec92a4db54c6b804a6c10d9393c",
+    "receiptId": "rcpt_b68e6367-089e-4227-a1e3-c3d6516c2a40",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_pp5YritX53DSEdHKyM",
+    "callId": "mr_28805b65f51e3a9452c33af55578495660cddc39",
+    "action": "create_draft",
+    "proposalDigest": "5d0004f5c9269b96a801c84bf585c1bcf78dcabc0402aab3a95bee9ebb8a6de8",
+    "receiptId": "rcpt_247c896d-818a-44f8-9225-b1f6d7801aec",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_7qKJDBUKrbdADGsBFx",
+    "callId": "mr_844f9d80686b2f042c2def26ba6bb9dc8d18d9d8",
+    "action": "create_draft",
+    "proposalDigest": "e6514a929cb44cdd1da70b5c7ecab0d2eeb92ae8d02f8adcf4a32746a9ba1318",
+    "receiptId": "rcpt_6d5a9099-3a92-4c3c-befd-0fcf1ad9ed71",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_Ds48AWPsqAsCWRyoCL",
+    "callId": "mr_cd0d3b6550c40ae86e1cfea7559e5259bc09317c",
+    "action": "send_approved_notice",
+    "proposalDigest": "b5fe7bf3ea992e9dd4307e43a350bf8f4232746f8c599d6f06303284e6ca8b91",
+    "receiptId": "rcpt_b2998672-4dd5-470d-bdd1-e5eba449bd11",
+    "status": "executed"
+   },
+   {
+    "dossierId": "d_wGUsBStSZi5MmPo6iL",
+    "callId": "mr_c23b2df65799035f89a7210c1ba1bfe02b520807",
+    "action": "quarantine_item",
+    "proposalDigest": "3e8c34b7fc749b11daa163f467664e5458d55e8022a3efc3485c98581ca7a710",
+    "receiptId": "rcpt_f27e86d8-1da7-4520-afa3-df5e6f4e49b6",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_QdvQd5xYNnKKeFxbZu",
+    "callId": "mr_55feaa79aec74d87ec92399364f82ff9f558e46c",
+    "action": "request_confirmation",
+    "proposalDigest": "4d17cef5f9f0f4ea2075da59c0f6ceb51d84354dc50ed2eb16bed5255ba3a8f2",
+    "receiptId": "rcpt_5be9b2e5-7f8b-452a-9962-394321928ed7",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_MKcX8gfrABMqYCMgqu",
+    "callId": "mr_fc0e38667fb7994bfcc32e22ef55ef6b060d5b23",
+    "action": "quarantine_item",
+    "proposalDigest": "e01b54bd86a698d3a3efb62584c05ae6a26862f2374d8fb571ddfdd31262951b",
+    "receiptId": "rcpt_124a6506-80ed-4a97-8a81-f82fa7406d40",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_ESzSW3fmTvYc4ocRtJ",
+    "callId": "mr_27103eabb475fb4675d27690d7a091ada000f8a0",
+    "action": "quarantine_item",
+    "proposalDigest": "12ef6504ebe5455f3a97f2b9356e026d24fd46a95c66f1d4003306f408c92fc2",
+    "receiptId": "rcpt_0c2c139f-7ab6-4cc5-9f81-994eac1fad6f",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_wWVZYMYPHRdACfaJWX",
+    "callId": "mr_10f639989ec1344fc34c4be958c3cb7370aac18f",
+    "action": "request_confirmation",
+    "proposalDigest": "6fa4a8b5a8f186c9b49ffb94d6ac867f7eaff651436b262f74407f2820dc8fda",
+    "receiptId": "rcpt_80ec82a1-bddb-4721-9fac-4608d1dd05fa",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_VUAKvpMsKSvfpyBWPm",
+    "callId": "mr_255bb15bc07e38cf13ba4bea9ced9c233220efb1",
+    "action": "send_approved_notice",
+    "proposalDigest": "f2c423c869951700b25bbdff2849ca42023ebb8b380fa90f51e206a59c0e0731",
+    "receiptId": "rcpt_bf55074d-5520-4ed7-b110-77f96fb3f40c",
+    "status": "executed"
+   },
+   {
+    "dossierId": "d_8KLmVjZnXxqV3yaVNL",
+    "callId": "mr_eb65678eb399ad169579d367729125630d0ee347",
+    "action": "create_draft",
+    "proposalDigest": "129aefadae69dc773a1c2d6b7440c347874e76d369e3f70fddb1155043c1b97d",
+    "receiptId": "rcpt_a58b3379-8f3c-4e99-ae95-3787412a610d",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_owdd9AsvLD3aQKEmKs",
+    "callId": "mr_d432eb7bf04717c3ab239710d5f2c555c8661c2f",
+    "action": "quarantine_item",
+    "proposalDigest": "328821a0d6b8c936ff36eae40c768662d70ac7ce3c6a72410ca63bfaab6806a7",
+    "receiptId": "rcpt_fe29b96a-2ade-4fb9-bcdf-ae1bda5d833c",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_V4Aatce4tVuYDDynRP",
+    "callId": "mr_645f521222574217639074de5e8b5b4b69b2f194",
+    "action": "update_internal_record",
+    "proposalDigest": "13f76b3da7ce57f10d99a98532fa5736c217d2b2e8560bf5b9314981e6bfd531",
+    "receiptId": "rcpt_ec875490-8b43-4553-b666-5b54315c46bb",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_dwXy9sNjojU6uUGpkq",
+    "callId": "mr_b7103650f5d0ff792b37f4acd530794fc6e64b4d",
+    "action": "send_approved_notice",
+    "proposalDigest": "a418e85216afb47bc7f75155394c671b0026ea97c61ecda13aaa59d09e6b98f7",
+    "receiptId": "rcpt_e7e030aa-2113-4d2e-8ede-2305464571f9",
+    "status": "executed"
+   },
+   {
+    "dossierId": "d_mzActF9ASjR7JCKroq",
+    "callId": "mr_9867713c7209cdb2716100de8797dbcec8352bd7",
+    "action": "request_confirmation",
+    "proposalDigest": "ae802bd0d7647ce5d965dd0c928bc1d1c79ae424dd476da5473d4afdc4e1aa28",
+    "receiptId": "rcpt_f90ce3d9-4fad-4dab-b918-c712319e2a4a",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_MpbpHRSg4PpFZWRR42",
+    "callId": "mr_0f9264debc2184640f8b3b9e49b8107854aee332",
+    "action": "no_action",
+    "proposalDigest": "79404d7007995459dd8e64b2ab103dfae0f6fe069bf7ec61e58663763eba8c47",
+    "receiptId": "rcpt_ae3d782a-3d57-4688-a60f-effdb6812bbd",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_yYdXeVLp98DZjK94Br",
+    "callId": "mr_779992af7709b18de900cb0e2000d9f57487d1ff",
+    "action": "no_action",
+    "proposalDigest": "97a1e3c3f768f7f618a0cce6ff14f13791a54642fefa525cbfc5a505bdec1d1f",
+    "receiptId": "rcpt_d26b36ff-a781-41dd-8d5e-86102161a22a",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_tXWLgAADtzuJtvb2pM",
+    "callId": "mr_7b4978135cc50cfb8fbbd06851024cb812b62889",
+    "action": "update_internal_record",
+    "proposalDigest": "26b901cf1e8e766309c754352a1fc97798d36538803f9d5b7f43d55213e4aa9b",
+    "receiptId": "rcpt_4b4a85de-c185-40e9-88e7-ea25da8e8d02",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_EGY4uTrejbN3cGbiTw",
+    "callId": "mr_0ca103b70fb1de909405cb4e9d541f853f224b7d",
+    "action": "quarantine_item",
+    "proposalDigest": "229d2d6bbf6177cc92d630c552618a739054959e0976aaa0838cf65f32f7777c",
+    "receiptId": "rcpt_18db2346-3734-4097-aa96-fb9761188967",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_vdhLVNZ4QtJehJbNpS",
+    "callId": "mr_1a5227480ce2dfb5e3128bf4a8be90da736e658b",
+    "action": "quarantine_item",
+    "proposalDigest": "e1c1d15ea41e816b4221f2378472ee8f64b90d037b99ca885b60652db7ba3332",
+    "receiptId": "rcpt_e8b721d4-007c-403d-bf39-d36788e11b39",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_K598fdsnE6JP7VMz2S",
+    "callId": "mr_6bca39ab9daadbb6614ac66067064b0dc804c768",
+    "action": "create_draft",
+    "proposalDigest": "eff2bce9b67920d8f257ef9ee240b8e9b6be7dfbc7d3060fad16ff5fc698990d",
+    "receiptId": "rcpt_149479e2-8de6-4ad5-b632-b8ec5276eb03",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_LSfbdNjyCmRrviQKxN",
+    "callId": "mr_35f059477edf7ef61213d9177ddf759ab6cf905f",
+    "action": "create_draft",
+    "proposalDigest": "1fff0a58c39c90cdde26873c6b5138f26423901b3f17a3620e5440765ee10986",
+    "receiptId": "rcpt_e077d9b6-6ece-4415-a11b-2a1762823258",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_muyCVCumYHVWofbumN",
+    "callId": "mr_bb26669231f70f93dfc8bcf4663a17c02852b99e",
+    "action": "quarantine_item",
+    "proposalDigest": "5abae8c54afdfa242c110cc879e1b8d711e3d2b8c7dfb41d52fb1b498df400ab",
+    "receiptId": "rcpt_07d0a36c-8005-4e83-8a1a-d6191b051c16",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_ukSFHuwNdbBTDwC4ju",
+    "callId": "mr_88190da7cb1bc5073ce210b709cb38c83a8c2e0c",
+    "action": "update_internal_record",
+    "proposalDigest": "573578c5e9d2f028dc358f82c5b8f826fff29cc3f48de2b83e51ae7c94f26797",
+    "receiptId": "rcpt_0464f670-de49-4cd0-bf39-1d3ca6e38a35",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_qQEDMgQnATx9gp8mGM",
+    "callId": "mr_ed334aa3f897c70644485de25c7bc34fb7f50662",
+    "action": "update_internal_record",
+    "proposalDigest": "67dbe850d13a6fbb4a0b86e4f6486e6e71ab3bfe5346ca6efa14683869e41acc",
+    "receiptId": "rcpt_75d8ab2e-1402-4f76-b1c5-e47f7ea7fcb6",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_Xq49aY874uNZyzga3u",
+    "callId": "mr_c46e3def3411529779d9fe8e83909aae7d5cba4b",
+    "action": "quarantine_item",
+    "proposalDigest": "48f659ffca664d1d20cb3f101b3d0dc19a06d22d83d3e17815a1371f244d9cc8",
+    "receiptId": "rcpt_2141a117-581f-43ff-9fa0-3f506c8296a9",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_RzjUdTD9W4ZQTBx2yh",
+    "callId": "mr_1cbb16d0e5f85c53edbeb29c6127424eaf9b5691",
+    "action": "update_internal_record",
+    "proposalDigest": "7e798d1eab95ccccf2bff93fd09dfdbf3f8c5980cb981e2d892924f4db810cd4",
+    "receiptId": "rcpt_09f27896-a2e3-45be-9cf9-93ca17b68727",
+    "status": "rejected"
+   },
+   {
+    "dossierId": "d_wzxrvg6vEjyMxv3iFA",
+    "callId": "mr_1981c8e73afed1a55d8dcb9046ae0624e4ff85be",
+    "action": "send_approved_notice",
+    "proposalDigest": "320395508d0457e79400f900b6e954b51e3342501b7b7ba1aef4b1058da6b146",
+    "receiptId": "rcpt_2050cb4e-da18-446c-9050-ff58c6442fbc",
+    "status": "executed"
+   }
+  ]
+ }
+}

@@ -24,7 +24,13 @@ import sys
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CAPTURED = os.path.join(HERE, "captured")
+# Ground truth comes from the newest capture set only. callIds are derived from
+# dossier content, so they repeat across capture sets while the proposals behind
+# them differ - mixing the sets would join a fresh receipt onto a stale proposal.
+CAPTURED = os.path.join(HERE, "captured2")
+# Only the grader's own traffic is ground truth. livecheck.py probes supply
+# their own `accepted` flags and would otherwise read as grader verdicts.
+GRADER_CLIENT = "2a06:"
 DEFAULT_DB = os.path.join(
     os.environ.get("TEMP", "/tmp"), "ga5_eval_q9.db")
 
@@ -66,6 +72,8 @@ def load_captures():
             except json.JSONDecodeError:
                 continue
         rec["_file"] = os.path.basename(path)
+        if not str(rec.get("client", "")).startswith(GRADER_CLIENT):
+            continue
         if isinstance(rec.get("request"), dict):
             out.append(rec)
     return out

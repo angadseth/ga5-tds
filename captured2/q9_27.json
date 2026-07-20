@@ -1,0 +1,14 @@
+{
+ "ts": 1784570566.1045742,
+ "path": "/q9/mailroom",
+ "client": "2a06:98c0:3600::103",
+ "request": {
+  "profile": "ga5-mailroom-action-gate/v2",
+  "operation": "invent_receipts",
+  "evaluationId": "invalid_fe6625ce-021a-4ffc-a5eb-310d9270eb16",
+  "dossiers": []
+ },
+ "response": {
+  "detail": "unknown operation"
+ }
+}
