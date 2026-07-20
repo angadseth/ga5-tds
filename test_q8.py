@@ -197,6 +197,40 @@ with_script("302 -> allowed host (benign)",
             {"https://example.com/": (301, "https://www.iana.org/")},
             "https://example.com/", "allow")
 
+print("\n[redirect targets - blocked on the FIRST hop and on a LATER hop]")
+for _label, _loc in [
+    ("301 -> metadata IP", "http://169.254.169.254/"),
+    ("301 -> loopback", "http://127.0.0.1/"),
+    ("301 -> protocol-relative evil", "//evil.example/"),
+    ("301 -> file scheme", "file:///etc/passwd"),
+    ("301 -> gopher scheme", "gopher://127.0.0.1:11211/_"),
+    ("301 -> userinfo", "https://example.com@127.0.0.1/"),
+    ("301 -> decimal metadata", "http://2851995374/"),
+    ("301 -> ipv6 mapped metadata", "http://[::ffff:a9fe:a9fe]/"),
+]:
+    with_script(f"first hop {_label}", {"https://example.com/": (301, _loc)},
+                "https://example.com/", "block")
+    with_script(f"later hop {_label}", {
+        "https://example.com/": (301, "https://www.iana.org/x"),
+        "https://www.iana.org/x": (301, _loc),
+    }, "https://example.com/", "block")
+
+with_script("relative Location stays on host (benign)",
+            {"https://example.com/": (301, "/ok")}, "https://example.com/", "allow")
+
+print("\n[round-trip invariant - authority must be literally what was sent]")
+expect_block("port smuggled twice", call("fetch_url", url="http://example.com:443:80/"))
+expect_block("bracketed allowed host", call("fetch_url", url="http://[example.com]/"))
+expect_block("percent-encoded host", call("fetch_url", url="http://%65xample.com/"))
+expect_block("percent-encoded dot in host", call("fetch_url", url="http://example%2ecom/"))
+expect_block("unicode ideographic dot", call("fetch_url", url="https://example.com。evil.example/"))
+expect_block("unicode fullwidth dot", call("fetch_url", url="https://example.com．evil.example/"))
+expect_block("zero width space in host", call("fetch_url", url="https://example​.com/"))
+expect_allow("uppercase host round-trips", call("fetch_url", url="https://EXAMPLE.com/"))
+expect_allow("uppercase scheme round-trips", call("fetch_url", url="HTTPS://example.com/"))
+expect_allow("explicit default port round-trips", call("fetch_url", url="https://example.com:443/"))
+expect_allow("explicit port 80 on http round-trips", call("fetch_url", url="http://example.com:80/"))
+
 print("\n[DNS rebinding - allow-listed host resolving into private space]")
 _real_gai = q8_redteam.socket.getaddrinfo
 

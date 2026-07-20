@@ -91,38 +91,8 @@ r3 = c.post("/a2a/message:send", headers=AUTH_A, json=bad)
 chk("Q10 changed content -> 409", r3.status_code == 409, r3.status_code)
 chk("Q10 409 says IDEMPOTENCY_CONFLICT", "IDEMPOTENCY_CONFLICT" in r3.text, r3.text[:120])
 
-# --- Q9 conflict + schema rejection + receipt binding ---
-D = [{"dossierId": "S1", "content": "Customer asks for a copy of their invoice. Routine request."}]
-p1 = c.post("/q9/mailroom", json={"operation": "propose", "evaluationId": "spot-e1", "dossiers": D})
-chk("Q9 propose 200", p1.status_code == 200, p1.text[:160])
-props = p1.json().get("proposals", [])
-chk("Q9 status awaiting_receipts", p1.json().get("status") == "awaiting_receipts")
-chk("Q9 one proposal per dossier", len(props) == 1, props)
-
-p2 = c.post("/q9/mailroom", json={"operation": "propose", "evaluationId": "spot-e1", "dossiers": D})
-chk("Q9 exact replay identical", p2.json() == p1.json())
-
-D2 = [{"dossierId": "S1", "content": "COMPLETELY different content now."}]
-p3 = c.post("/q9/mailroom", json={"operation": "propose", "evaluationId": "spot-e1", "dossiers": D2})
-chk("Q9 same evaluationId changed content -> 409", p3.status_code == 409, p3.status_code)
-
-dup = c.post("/q9/mailroom", json={"operation": "propose", "evaluationId": "spot-e2",
-                                   "dossiers": D + D})
-chk("Q9 duplicate dossier ids -> 400/422", dup.status_code in (400, 422), dup.status_code)
-bad_op = c.post("/q9/mailroom", json={"operation": "nonsense", "evaluationId": "spot-e3"})
-chk("Q9 bad operation -> 400/422", bad_op.status_code in (400, 422), bad_op.status_code)
-malformed = c.post("/q9/mailroom", json={"operation": "propose", "evaluationId": "spot-e4",
-                                         "dossiers": "not-a-list"})
-chk("Q9 malformed -> 400/422", malformed.status_code in (400, 422), malformed.status_code)
-
-forged = c.post("/q9/mailroom", json={"operation": "commit", "evaluationId": "spot-e1",
-                                      "receipts": [{"dossierId": "S1", "callId": "forged-call-id",
-                                                    "action": "create_draft", "receipt": "x"}]})
-chk("Q9 forged callId rejected",
-    forged.status_code >= 400 or forged.json().get("status") != "completed", forged.status_code)
-unknown = c.post("/q9/mailroom", json={"operation": "commit", "evaluationId": "no-such-eval",
-                                       "receipts": []})
-chk("Q9 unknown evaluation rejected",
-    unknown.status_code >= 400 or unknown.json().get("status") != "completed", unknown.status_code)
+# Q9 assertions used to live here, written against the schema we guessed
+# before the exam's exact request/response blocks were available. They now
+# live in spotcheck_q9.py, which recomputes both digests from the spec.
 
 print("\n" + ("ALL SPOTCHECKS PASSED" if not fails else f"{len(fails)} FAILED: {fails}"))

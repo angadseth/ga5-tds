@@ -1,0 +1,58 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20260720223451
+Username: LAXMINARAYAN\24f20
+RunAs User: LAXMINARAYAN\24f20
+Configuration Name: 
+Machine: LAXMINARAYAN (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\Users\24f20\Desktop\IITM-Subjects\TDS\ga5\install-wsl.ps1
+Process ID: 20200
+PSVersion: 5.1.26100.8875
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.8875
+BuildVersion: 10.0.26100.8875
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is C:\Users\24f20\Desktop\IITM-Subjects\TDS\ga5\wsl-install.log
+=== enabling features ===
+
+Deployment Image Servicing and Management tool
+Version: 10.0.26100.8737
+
+Image Version: 10.0.26200.8875
+
+Enabling feature(s)
+[==========================100.0%==========================]
+The operation completed successfully.
+
+Deployment Image Servicing and Management tool
+Version: 10.0.26100.8737
+
+Image Version: 10.0.26200.8875
+
+Enabling feature(s)
+[==========================100.0%==========================]
+The operation completed successfully.
+=== wsl --install ===
+Downloading: Windows Subsystem for Linux 2.7.10
+Installing: Windows Subsystem for Linux 2.7.10
+Windows Subsystem for Linux 2.7.10 has been installed.
+The operation completed successfully.
+Downloading: Ubuntu
+Installing: Ubuntu
+Distribution successfully installed. It can be launched via 'wsl.exe -d Ubuntu'
+wsl exit code: 0
+=== status ===
+Default Distribution: Ubuntu
+Default Version: 2
+WSL1 is not supported with your current machine configuration.
+Please enable the "Windows Subsystem for Linux" optional component to use WSL1.
+  NAME      STATE           VERSION
+* Ubuntu    Stopped         2
+**********************
+Windows PowerShell transcript end
+End time: 20260720223952
+**********************
