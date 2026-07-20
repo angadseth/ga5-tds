@@ -197,6 +197,36 @@ with_script("302 -> allowed host (benign)",
             {"https://example.com/": (301, "https://www.iana.org/")},
             "https://example.com/", "allow")
 
+print("\n[DNS rebinding - allow-listed host resolving into private space]")
+_real_gai = q8_redteam.socket.getaddrinfo
+
+
+def with_dns(label, addrs, url, expect):
+    def fake(host, port, *a, **k):
+        return [(2, 1, 6, "", (ip, port)) for ip in addrs]
+    q8_redteam.socket.getaddrinfo = fake
+    try:
+        body = call("fetch_url", url=url)
+    finally:
+        q8_redteam.socket.getaddrinfo = _real_gai
+    (expect_allow if expect == "allow" else expect_block)(label, body)
+
+
+with_dns("example.com rebound to 127.0.0.1", ["127.0.0.1"], "https://example.com/", "block")
+with_dns("example.com rebound to 169.254.169.254", ["169.254.169.254"], "https://example.com/", "block")
+with_dns("www.iana.org rebound to 10.0.0.5", ["10.0.0.5"], "https://www.iana.org/", "block")
+with_dns("public first, private second record", ["93.184.216.34", "192.168.0.9"],
+         "https://example.com/", "block")
+with_dns("private AAAA alongside public A", ["93.184.216.34", "::1"],
+         "https://example.com/", "block")
+
+print("\n[url path traversal - must not over-block in-root '..']")
+expect_block("path climbs above root", call("fetch_url", url="https://example.com/../../etc/passwd"))
+expect_block("encoded climb above root", call("fetch_url", url="https://example.com/%2e%2e/%2e%2e/etc/passwd"))
+expect_allow("in-root a/../b is fine", call("fetch_url", url="https://example.com/a/../b"))
+expect_allow("in-root ./ is fine", call("fetch_url", url="https://example.com/./"))
+expect_allow("normal deep path", call("fetch_url", url="https://www.iana.org/domains/reserved"))
+
 print("\n[misc]")
 expect_block("unknown tool", call("delete_everything", path="/"))
 expect_block("empty body", client.post("/q8/check", json={}).json())

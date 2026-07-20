@@ -8,6 +8,7 @@ logical root is mapped onto a writable physical base directory and every
 filesystem operation goes through that mapping.
 """
 
+import http.client
 import ipaddress
 import os
 import posixpath
@@ -272,6 +273,19 @@ def _canonical_host(host):
     return h, None
 
 
+def _climbs_above_root(path):
+    """True if a URL path's '..' segments escape above '/'."""
+    depth = 0
+    for seg in path.replace("\\", "/").split("/"):
+        if seg == "..":
+            depth -= 1
+            if depth < 0:
+                return True
+        elif seg and seg != ".":
+            depth += 1
+    return False
+
+
 def _check_hostname_syntax(h):
     """Reject anything that is not a plain, exactly-spelled LDH hostname."""
     if h.startswith(".") or h.endswith("."):
@@ -297,6 +311,12 @@ def check_url(raw_url):
         return False, "missing or non-string url", None
     if "\x00" in raw_url or len(raw_url) > MAX_PATH_LEN:
         return False, "malformed url", None
+
+    # urlsplit silently strips tab, CR and LF anywhere in the URL, so
+    # "https://exam\tple.com/" parses as host example.com and would clear the
+    # allow-list. Reject control characters before parsing rather than after.
+    if any(ch in raw_url for ch in "\t\r\n\x0b\x0c") or any(ord(ch) < 0x20 for ch in raw_url):
+        return False, "control character in url", None
 
     try:
         parts = urlsplit(raw_url.strip())
@@ -336,6 +356,13 @@ def check_url(raw_url):
 
     if canon not in ALLOWED_HOSTS:
         return False, f"host {canon} not in allow-list", canon
+
+    # A path may use '..' freely as long as it never climbs above the root:
+    # '/a/../b' is fine, '/../../etc/passwd' is a traversal probe. Same
+    # boundary rule as the file guardrail, checked at every decoding depth.
+    for variant in _decode_variants(parts.path or ""):
+        if _climbs_above_root(variant):
+            return False, "url path climbs above document root", canon
 
     # DNS-rebinding defense: every resolved address must be public.
     try:
@@ -391,6 +418,13 @@ def do_fetch_url(args):
     for _ in range(MAX_REDIRECTS + 1):
         try:
             status, headers, body = _http_get(current)
+        except (http.client.InvalidURL, UnicodeError, ValueError) as exc:
+            # Not a blip: the URL was malformed enough that the client refused
+            # it, which usually means it parsed differently for us than for
+            # the client. Treat a disagreement about the target as hostile.
+            return {"action": "block",
+                    "reason": f"url rejected by http client ({exc.__class__.__name__})",
+                    "result": None}
         except Exception as exc:  # network blip - stay permissive, never leak
             last_error = exc.__class__.__name__
             break
