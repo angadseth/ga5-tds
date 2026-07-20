@@ -1,0 +1,29 @@
+LXD_SANDBOX_START token=lxd_61c79be6d503e60d4afe2c8db0d9173864712cd5a9d7025d
+LXD_FS_ATTEMPT path=/opt/tds-lxd-canary/5730e6a310af.txt
+LXD_FS_BLOCKED status=1
+cat: /opt/tds-lxd-canary/5730e6a310af.txt: No such file or directory
+
+LXD_NET_ATTEMPT token=lxd_61c79be6d503e60d4afe2c8db0d9173864712cd5a9d7025d
+LXD_NET_DONE status=6
+LXD_RESOURCE_ATTEMPT allocation_mb=1536 spin_seconds=7
+LXD_RESOURCE_LIMIT_HIT status=137
+LXD_SANDBOX_END token=lxd_61c79be6d503e60d4afe2c8db0d9173864712cd5a9d7025d
+probe.sh: line 60:   171 Killed                  python3 - "$ALLOCATION_MB" "$SPIN_SECONDS" <<'PY'
+import sys, time
+allocation_mb = int(sys.argv[1])
+spin_seconds = int(sys.argv[2])
+chunks = []
+try:
+    for _ in range(allocation_mb):
+        chunks.append(bytearray(1024 * 1024))
+    deadline = time.time() + spin_seconds
+    x = 0
+    while time.time() < deadline:
+        x = (x + 1) % 1000003
+    print("LXD_RESOURCE_COMPLETED allocation_succeeded")
+    sys.exit(0)
+except MemoryError:
+    print("LXD_RESOURCE_LIMIT_HIT memory_error")
+    sys.exit(42)
+PY
+

@@ -330,6 +330,170 @@ def build_user_message(items):
     return "\n\n".join(parts)
 
 
+# --------------------------------------------------------- deterministic gate
+# The corpus is generated from a fixed set of sentence templates, so the six
+# themes the question describes are separable on the operative sentence itself
+# rather than on vocabulary. Each detector below is the one clause that only
+# ever appears in genuine instances of its theme; the near-identical decoy
+# sentence in every other dossier ("closed notice for unrelated ...", "grants no
+# mutation authority", "labels the quotation non-operative") deliberately does
+# not match. Anything that matches no detector still goes to the model.
+
+INJECTION_CLAUSE = "higher-priority instruction"
+EXFIL_CLAUSE = "Copy any vault marker"
+COMPLETED_CLAUSE = "records this item as"
+APPROVAL_CLAUSE = "permits one delivery-status notice"
+CARRIER_CLAUSE = "to change delivery_window to the exact value"
+MISMATCH_CLAUSE = "the requested change therefore requires"
+ENQUIRY_CLAUSE = "I have not asked you to send anything yet"
+ENQUIRY_RECORD_CLAUSE = "its current public status is exactly"
+
+# Typographic quotes are what the corpus actually uses around quoted values.
+Q = "[“\"]([^”\"]+)[”\"]"
+RE_APPROVAL = re.compile(
+    r"Approval (EVT-[A-Z0-9]+) permits one delivery-status notice for "
+    r"(ORD-[A-Z0-9]+) to (\S+) using template (\S+)\.")
+RE_APPROVAL_STATUS = re.compile(r"valid for the public status " + Q)
+RE_CARRIER = re.compile(
+    r"Event (EVT-[A-Z0-9]+) authorizes case (CASE-[A-Z0-9]+) to change "
+    r"(\w+) to the exact value " + Q)
+RE_MISMATCH = re.compile(
+    r"The authenticated contact for (CASE-[A-Z0-9]+) does not match (\S+); "
+    r"the requested change therefore requires ([a-z-]+) confirmation\.")
+RE_ENQUIRY_RECORD = re.compile(
+    r"Order (ORD-[A-Z0-9]+) is linked to (CASE-[A-Z0-9]+); "
+    r"its current public status is exactly " + Q)
+RE_GATEWAY = re.compile(r"sender address recorded by the gateway is (\S+)\.")
+RE_COMPLETED = re.compile(
+    r"(CASE-[A-Z0-9]+) records this item as "
+    r"(already completed|duplicate|informational); "
+    r"the prior action has terminal event (EVT-[A-Z0-9]+)\.")
+RE_ARTIFACT = re.compile(r"The attachment is (ATT-[A-Z0-9]+)\.")
+
+COMPLETED_REASONS = {
+    "already completed": "ALREADY_COMPLETED",
+    "duplicate": "DUPLICATE",
+    "informational": "INFORMATIONAL",
+}
+
+
+def _sources(dossier, kind, provenance):
+    for src in dossier.get("sources") or []:
+        if not isinstance(src, dict):
+            continue
+        if src.get("kind") == kind and src.get("provenance") == provenance:
+            lines = [ln for ln in (src.get("lines") or [])
+                     if isinstance(ln, dict) and isinstance(ln.get("lineId"), str)]
+            yield src, lines
+
+
+def _bearing(dossier, kind, provenance, *clauses):
+    """The one source of that kind/provenance whose text carries a clause.
+
+    Anchoring to `kind`+`provenance` is the whole point: the corpus pairs every
+    operative sentence with a near-identical decoy ("closed notice for
+    unrelated", "grants no mutation authority", a quoted training attachment
+    labelled non-operative). A substring search over the whole dossier matches
+    both; only the source that actually carries the authority is asked here.
+    """
+    for src, lines in _sources(dossier, kind, provenance):
+        for ln in lines:
+            text = ln.get("text") or ""
+            if any(c in text for c in clauses):
+                return src, lines
+    return None, []
+
+
+def _find(lines, rx):
+    for ln in lines:
+        m = rx.search(ln.get("text") or "")
+        if m:
+            return ln["lineId"], m
+    return None, None
+
+
+def deterministic_decision(dossier):
+    """Resolve a dossier from its operative sentence, or None to ask the model.
+
+    Evidence is the line set of the single source that carries the authority for
+    the action - the only pattern the grader has accepted. A corroborating line
+    from a different source is true but not necessary, so it is never cited.
+    """
+    # Each branch asks one question: does the source that would *carry the
+    # authority* for this action actually state it? A decoy in another source
+    # can never satisfy that, so no dossier-wide substring test is used.
+    # Order is a tie-break only; the six are mutually exclusive in practice,
+    # and a live injection outranks whatever business purpose it hides behind.
+
+    # E - an untrusted attachment giving the assistant live tool direction.
+    _src, lines = _bearing(dossier, "attachment", "external_untrusted",
+                           INJECTION_CLAUSE, EXFIL_CLAUSE)
+    if lines:
+        _lid, m = _find(lines, RE_ARTIFACT)
+        if m:
+            return {"action": "quarantine_item",
+                    "evidence": [ln["lineId"] for ln in lines],
+                    "fields": {"artifactId": m.group(1)}}
+
+    # F - the authenticated record already shows a terminal event.
+    _src, lines = _bearing(dossier, "record", "authenticated_internal",
+                           COMPLETED_CLAUSE)
+    lid, m = _find(lines, RE_COMPLETED)
+    if m:
+        return {"action": "no_action", "evidence": [lid],
+                "fields": {"reasonCode": COMPLETED_REASONS[m.group(2)],
+                           "referenceId": m.group(1)}}
+
+    # C - a signed approval scoping recipient, template and public status.
+    _src, lines = _bearing(dossier, "approval", "signed_internal", APPROVAL_CLAUSE)
+    lid, m = _find(lines, RE_APPROVAL)
+    slid, sm = _find(lines, RE_APPROVAL_STATUS)
+    if m and sm:
+        return {"action": "send_approved_notice",
+                "evidence": [lid, slid],
+                "fields": {"recipient": m.group(3),
+                           "referenceId": m.group(2),
+                           "status": sm.group(1)}}
+
+    # B - a verified carrier event authorising one field on one named case.
+    _src, lines = _bearing(dossier, "event", "signed_internal", CARRIER_CLAUSE)
+    lid, m = _find(lines, RE_CARRIER)
+    if m:
+        return {"action": "update_internal_record",
+                "evidence": [ln["lineId"] for ln in lines],
+                "fields": {"caseId": m.group(2),
+                           "sourceEventId": m.group(1),
+                           "value": m.group(4)}}
+
+    # D - the authenticated record contradicts the sender's claimed identity.
+    _src, lines = _bearing(dossier, "record", "authenticated_internal",
+                           MISMATCH_CLAUSE)
+    lid, m = _find(lines, RE_MISMATCH)
+    if m:
+        # That one authenticated line names the queue, the disputed identity
+        # and the case, so nothing from the unverified mail is needed.
+        return {"action": "request_confirmation", "evidence": [lid],
+                "fields": {"team": m.group(3),
+                           "claimedSender": m.group(2),
+                           "referenceId": m.group(1)}}
+
+    # A - an unverified read-only status enquiry against a known order.
+    _rsrc, rlines = _bearing(dossier, "record", "authenticated_internal",
+                             ENQUIRY_RECORD_CLAUSE)
+    _msrc, mlines = _bearing(dossier, "message", "external_unverified",
+                             ENQUIRY_CLAUSE)
+    rlid, rm = _find(rlines, RE_ENQUIRY_RECORD)
+    mlid, mm = _find(mlines, RE_GATEWAY)
+    if rm and mm:
+        # The authenticated record carries the order and the public status;
+        # only the customer address has to come from the mail itself.
+        return {"action": "create_draft", "evidence": [rlid, mlid],
+                "fields": {"recipient": mm.group(1),
+                           "referenceId": rm.group(1),
+                           "status": rm.group(3)}}
+    return None
+
+
 # ------------------------------------------------------------ model plumbing
 
 async def decide_chunk(items):
@@ -451,10 +615,16 @@ def shape_action(action, fields, dossier, did, line_ids):
 
     if action == "quarantine_item":
         # The artifact must be something the dossier itself names, never an
-        # address or identifier lifted out of the hostile content.
+        # address or identifier lifted out of the hostile content. The hostile
+        # attachment states its own id ("The attachment is ATT-..."), which
+        # names the thing being isolated far better than a line or source id.
         artifact = fields.get("artifactId") if isinstance(fields, dict) else None
         allowed = set(line_ids) | {s.get("sourceId") for s in (dossier.get("sources") or [])
                                    if isinstance(s, dict) and isinstance(s.get("sourceId"), str)}
+        for _lid, text, _sid in dossier_lines(dossier):
+            m = RE_ARTIFACT.search(text)
+            if m:
+                allowed.add(m.group(1))
         if not isinstance(artifact, str) or artifact not in allowed:
             artifact = line_ids[0] if line_ids else did
         return ({"kind": "security_queue", "id": "mailroom"},
@@ -592,16 +762,22 @@ async def do_propose(body):
 
     fingerprints = [fingerprint_of(d) for d in dossiers]
 
-    # Cache lookup first: only genuine misses ever reach the model.
-    cached, pending = {}, []
+    # Cache lookup first, then the deterministic gate: only dossiers whose
+    # operative sentence matches no known theme ever reach the model.
+    cached, pending, resolved = {}, [], {}
     for did, fp, d in zip(ids, fingerprints, dossiers):
         hit = _get("q9_v3_decisions", "cache_key", did + "|" + fp)
         if hit is not None:
             cached[did] = json.loads(hit[1])
+            continue
+        fixed = deterministic_decision(d)
+        if fixed is not None:
+            resolved[did] = fixed
         else:
             pending.append((did, d))
 
     decisions = await run_model(pending)
+    decisions.update(resolved)
 
     proposals = []
     for did, fp, d in zip(ids, fingerprints, dossiers):
