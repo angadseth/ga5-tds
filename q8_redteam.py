@@ -15,7 +15,7 @@ import posixpath
 import re
 import socket
 import tempfile
-from urllib.parse import unquote, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, unquote, urlsplit, urlunsplit
 
 from fastapi import APIRouter, Request
 from fastapi.concurrency import run_in_threadpool
@@ -314,6 +314,70 @@ def _check_hostname_syntax(h):
     return None
 
 
+# Query parameters whose value the server is being asked to GO TO, as
+# opposed to ones that merely carry text. The distinction is the whole
+# point: '?q=http://127.0.0.1/admin' is somebody searching for a string and
+# must stay allowed, while '?next=http://169.254.169.254/latest' is an open
+# redirect aimed at the metadata service.
+REDIRECT_PARAMS = {
+    "next", "url", "uri", "redirect", "redirect_to", "redirect_uri",
+    "redirect_url", "redirecturl", "dest", "destination", "target",
+    "goto", "go", "continue", "return", "return_to", "return_url",
+    "returnto", "returnurl", "callback", "forward", "forward_url",
+    "out", "link", "load", "fetch", "proxy", "src", "image_url",
+    "feed", "host", "domain", "site", "page", "path", "file",
+}
+
+
+def _redirect_param_target(query: str):
+    """Return (param, value) when a redirect-intent parameter aims somewhere
+    the fetch policy would not allow, else None."""
+    if not query:
+        return None
+    try:
+        pairs = parse_qsl(query, keep_blank_values=True)
+    except Exception:
+        return None
+
+    for name, value in pairs:
+        if name.strip().lower() not in REDIRECT_PARAMS:
+            continue
+        for candidate in _decode_variants(value):
+            candidate = candidate.strip()
+            if not candidate:
+                continue
+            probe = candidate
+            if probe.startswith("//"):          # protocol-relative
+                probe = "http:" + probe
+            if "://" not in probe:
+                # A bare host or address is still a redirect target.
+                if not re.match(r"^[\w.\-\[\]:]+$", probe) or "." not in probe:
+                    continue
+                probe = "http://" + probe
+            try:
+                sub = urlsplit(probe)
+                host = sub.hostname
+            except ValueError:
+                return name, candidate
+            # Scheme first: file:/// and gopher:// have no hostname at all,
+            # so a host-led check would skip straight past them.
+            if sub.scheme.lower() not in ("http", "https"):
+                return name, candidate
+            if not host:
+                continue
+            host = host.strip("[]").rstrip(".").lower()
+            try:
+                ipaddress.ip_address(host)
+            except ValueError:
+                pass  # a name, not an address: the allow-list decides
+            else:
+                if _is_bad_ip(host):
+                    return name, candidate
+            if host not in ALLOWED_HOSTS:
+                return name, candidate
+    return None
+
+
 def check_url(raw_url):
     """Return (allowed, reason, safe_url).
 
@@ -392,6 +456,11 @@ def check_url(raw_url):
     for variant in _decode_variants(parts.path or ""):
         if _climbs_above_root(variant):
             return False, "url path climbs above document root", canon
+
+    bad_param = _redirect_param_target(parts.query or "")
+    if bad_param:
+        name, target = bad_param
+        return False, f"redirect parameter {name} points at {target}", canon
 
     # DNS-rebinding defense: every resolved address must be public. Runs
     # AFTER the allow-list match and does not short-circuit it, so a rebound
