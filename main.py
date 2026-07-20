@@ -26,6 +26,14 @@ MODULES = [
     "q11_incident",
 ]
 
+try:
+    import capture
+
+    app.middleware("http")(capture.middleware)
+    app.include_router(capture.router)
+except Exception:  # capture is diagnostics; never let it break the service
+    log.exception("capture unavailable")
+
 LOADED = {}
 for name in MODULES:
     try:
