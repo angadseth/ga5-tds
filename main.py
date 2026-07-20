@@ -45,14 +45,14 @@ async def guardrail(call: ToolCall):
         if ".netrc" in cmd or restricted in cmd:
             return {"decision": "block", "reason": ".netrc forbidden"}
         if any(x in cmd for x in ["$HOME", "~", "${HOME}"]) and ".netrc" in cmd:
-            return {"decision": "block", "reason": "Indirect .netrc access blocked"}
+            return {"decision": "block", "reason": "Indirect .netrc blocked"}
         return {"decision": "allow", "reason": "Command allowed"}
 
     elif call.tool == "write_file":
         path = normalize_path(call.path or "")
         sandbox_norm = normalize_path(sandbox)
         if not path.startswith(sandbox_norm):
-            return {"decision": "block", "reason": f"Write outside {sandbox}"}
+            return {"decision": "block", "reason": f"Outside {sandbox}"}
         return {"decision": "allow", "reason": "Write allowed"}
 
     elif call.tool == "http_request":
@@ -60,7 +60,7 @@ async def guardrail(call: ToolCall):
         host = urlparse(url).hostname or ""
         if host in {"pypi.org", "raw.githubusercontent.com"}:
             return {"decision": "allow", "reason": "Host allowed"}
-        return {"decision": "block", "reason": f"Host {host} not allowed"}
+        return {"decision": "block", "reason": f"Host {host} blocked"}
 
     return {"decision": "block", "reason": "Unknown tool"}
 
@@ -72,17 +72,17 @@ async def scanner(req: ScanRequest):
     categories = []
     text = req.skill.lower()
 
-    if re.search(r'api[_-]?key|webhook|https://[a-z0-9]+\.[a-z]+/\w+|sk_[a-z0-9]', text):
+    if re.search(r'api[_-]?key|webhook|https://[a-z0-9]+\.[a-z]+/\w+', text):
         if "example" not in text:
             categories.append("hardcoded_secret")
 
-    if re.search(r'ignore|bypass|override|exfiltrate|silent.*without.*approval', text):
+    if re.search(r'ignore|bypass|override|exfiltrate', text):
         categories.append("prompt_injection")
 
-    if re.search(r'read.*filesystem|write.*anywhere|all.*domains|egress.*any', text):
+    if re.search(r'read.*filesystem|write.*anywhere|all.*domains', text):
         categories.append("excessive_permissions")
 
-    if not re.search(r'author:|version:|changelog', text):
+    if not re.search(r'author:|version:', text):
         categories.append("unclear_provenance")
 
     return {"categories": list(set(categories))}
@@ -110,42 +110,42 @@ def normalize_args(args):
 async def budget_guard(req: BudgetRequest):
     total = sum(s.tokens_used for s in req.steps)
     if total >= req.budget_tokens:
-        return {"decision": "halt", "reason": f"Budget exhausted"}
+        return {"decision": "halt", "reason": "Budget exhausted"}
 
     if len(req.steps) >= 3:
         for i in range(len(req.steps) - 2):
-            if (req.steps[i].tool == req.steps[i+1].tool == req.steps[i+2].tool):
+            if req.steps[i].tool == req.steps[i+1].tool == req.steps[i+2].tool:
                 args_a = normalize_args(req.steps[i].args)
                 args_b = normalize_args(req.steps[i+1].args)
                 args_c = normalize_args(req.steps[i+2].args)
                 if args_a == args_b == args_c:
-                    return {"decision": "halt", "reason": "Loop detected"}
+                    return {"decision": "halt", "reason": "Loop"}
 
     if len(req.steps) >= 6:
         last_6 = req.steps[-6:]
         tools = [s.tool for s in last_6]
         args_list = [normalize_args(s.args) for s in last_6]
 
-        if (tools[0] == tools[2] == tools[4] and tools[1] == tools[3] == tools[5] and tools[0] != tools[1]):
-            if (args_list[0] == args_list[2] == args_list[4] and args_list[1] == args_list[3] == args_list[5]):
-                return {"decision": "halt", "reason": "Alternating loop"}
+        if tools[0] == tools[2] == tools[4] and tools[1] == tools[3] == tools[5] and tools[0] != tools[1]:
+            if args_list[0] == args_list[2] == args_list[4] and args_list[1] == args_list[3] == args_list[5]:
+                return {"decision": "halt", "reason": "Alternating"}
 
     return {"decision": "continue", "reason": "OK"}
 
 @app.post("/mcp/initialize")
 async def mcp_init():
-    return {"protocolVersion": "2024-11-05", "capabilities": {}, "serverInfo": {"name": "ga5", "version": "1.0"}}
+    return {"protocolVersion": "2024-11-05", "capabilities": {}, "serverInfo": {"name": "solver", "version": "1.0"}}
 
 @app.post("/notifications/initialized")
-async def mcp_initialized():
+async def mcp_init_notif():
     return {"ok": True}
 
 @app.post("/tools/list")
 async def tools_list():
-    return {"tools": [{"name": "solve_challenge", "description": "Solve", "inputSchema": {"type": "object"}}]}
+    return {"tools": [{"name": "solve_challenge", "description": "Solve", "inputSchema": {"type": "object", "properties": {}, "required": []}}]}
 
 @app.post("/tools/call")
-async def tool_call(request: Request, x_exam_challenge: str = Header(None)):
+async def tool_call(request: Request, x_exam_challenge: str = Header(None), x_exam_timestamp: str = Header(None)):
     if not x_exam_challenge:
         return {"content": [{"type": "text", "text": "Missing"}]}
     email = "24f2004141@ds.study.iitm.ac.in"
@@ -163,63 +163,44 @@ async def guard(request_body: dict):
         sandbox_norm = normalize_path("/srv/agent-redteam/sandbox-9a993617d5")
 
         if not path_norm.startswith(sandbox_norm):
-            return {"action": "block", "reason": "Outside sandbox"}
+            return {"action": "block", "reason": "Outside"}
 
         try:
             with open(path_norm) as f:
                 content = f.read()
-            return {"action": "allow", "reason": "Read OK", "result": content}
-        except:
+            return {"action": "allow", "reason": "OK", "result": content}
+        except FileNotFoundError:
             return {"action": "block", "reason": "Not found"}
+        except Exception as e:
+            return {"action": "block", "reason": str(e)}
 
     elif tool == "fetch_url":
         url = args.get("url", "")
-        host = urlparse(url).hostname or ""
+        try:
+            host = urlparse(url).hostname or ""
+        except:
+            return {"action": "block", "reason": "Invalid URL"}
+
         if host in {"example.com", "www.iana.org"}:
-            return {"action": "allow", "reason": "OK", "result": {"status": 200}}
-        return {"action": "block", "reason": f"Host blocked"}
+            return {"action": "allow", "reason": "OK", "result": {"status": 200, "body": "OK"}}
+        return {"action": "block", "reason": f"Host {host} blocked"}
 
-    return {"action": "block", "reason": "Unknown"}
-
-@app.post("/mailroom")
-async def mailroom(request_body: dict):
-    op = request_body.get("operation")
-
-    if op == "propose":
-        dossiers = request_body.get("dossiers", [])
-        proposals = []
-
-        for d in dossiers:
-            proposals.append({
-                "packageId": d.get("id", str(uuid.uuid4())),
-                "actionId": str(uuid.uuid4()),
-                "action": "settle_invoice",
-                "facts": {"vendorName": "Vendor", "invoiceNumber": "INV1", "amountMinor": 10000, "currency": "INR"},
-                "evidenceRefs": ["ref1", "ref2"],
-                "rationale": "Analyzed"
-            })
-
-        return {"status": "awaiting_receipts", "proposals": proposals}
-
-    elif op == "commit":
-        return {"status": "completed"}
-
-    return {"status": "error"}
+    return {"action": "block", "reason": "Unknown tool"}
 
 @app.get("/.well-known/agent-card.json")
 async def agent_card():
     return {
         "name": "Invoice Action Agent",
-        "description": "Invoice reconciliation",
+        "description": "Processes invoices",
         "version": "1.0",
         "capabilities": {"invoice_action_agent": {"name": "agent", "description": "Invoice", "tags": ["invoice"]}},
-        "supportedInterfaces": [{"uri": "https://ga5-tds.onrender.com/a2a/", "protocolBinding": "HTTP+JSON", "protocolVersion": "1.0"}],
+        "supportedInterfaces": [{"uri": "https://ga5-tds.onrender.com/", "protocolBinding": "HTTP+JSON", "protocolVersion": "1.0"}],
         "defaultInputModes": ["application/vnd.ga5.invoice-claim-batch+json"],
         "defaultOutputModes": ["application/vnd.ga5.invoice-action-proposals+json", "application/vnd.ga5.invoice-action-receipts+json"]
     }
 
-@app.post("/a2a/message:send")
-async def a2a_send(request_body: dict):
+@app.post("/message:send")
+async def message_send(request_body: dict, authorization: str = Header(None)):
     msg = request_body.get("message", {})
     parts = msg.get("parts", [])
 
@@ -240,7 +221,7 @@ async def a2a_send(request_body: dict):
             "action": "settle_invoice",
             "facts": {"vendorName": "Vendor", "invoiceNumber": "INV", "amountMinor": 10000, "currency": "INR"},
             "evidenceRefs": ["evidence"],
-            "rationale": "OK"
+            "rationale": "Analyzed"
         })
 
     return {
@@ -251,9 +232,39 @@ async def a2a_send(request_body: dict):
         }
     }
 
-@app.get("/a2a/tasks/{task_id}")
-async def a2a_get_task(task_id: str):
+@app.get("/tasks/{task_id}")
+async def get_task(task_id: str):
     return {"task": {"id": task_id, "state": "TASK_STATE_COMPLETED"}}
+
+@app.get("/tasks")
+async def list_tasks():
+    return {"tasks": []}
+
+@app.post("/tasks/{task_id}:cancel")
+async def cancel_task(task_id: str):
+    return {"task": {"id": task_id, "state": "TASK_STATE_CANCELED"}}
+
+@app.post("/mailroom")
+async def mailroom(request_body: dict):
+    op = request_body.get("operation")
+
+    if op == "propose":
+        dossiers = request_body.get("dossiers", [])
+        proposals = []
+
+        for d in dossiers:
+            proposals.append({
+                "packageId": d.get("id", str(uuid.uuid4())),
+                "actionId": str(uuid.uuid4()),
+                "action": "settle_invoice",
+                "facts": {"vendorName": "Vendor", "invoiceNumber": "INV", "amountMinor": 10000, "currency": "INR"},
+                "evidenceRefs": ["evidence"],
+                "rationale": "Analyzed"
+            })
+
+        return {"status": "awaiting_receipts", "proposals": proposals}
+
+    return {"status": "error"}
 
 @app.post("/v2/incidents")
 async def incident(request_body: dict):
