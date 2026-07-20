@@ -11,9 +11,44 @@ import re
 
 import httpx
 
+# Local .env is a dev convenience so a long-running process picks up a token
+# refresh without a restart; on Render the values come from real env vars.
+_ENV_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+
+
+def _from_env_file(key):
+    try:
+        with open(_ENV_FILE, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, _, v = line.partition("=")
+                    if k.strip() == key:
+                        return v.strip().strip("'\"")
+    except OSError:
+        pass
+    return ""
+
+
 BASE_URL = os.environ.get("LLM_BASE_URL", "https://aipipe.org/openai/v1")
-API_KEY = os.environ.get("LLM_API_KEY") or os.environ.get("AIPIPE_TOKEN", "")
 MODEL = os.environ.get("LLM_MODEL", "gpt-4o-mini")
+
+
+def _key():
+    """Resolved per call so a refreshed token is picked up without a restart.
+
+    The local .env wins over the process environment on purpose: these tokens
+    expire weekly, and already-running processes hold a stale copy of the env
+    that a `setx` refresh cannot reach. On Render no .env exists, so the real
+    environment variable is used.
+    """
+    return (_from_env_file("AIPIPE_TOKEN")
+            or os.environ.get("LLM_API_KEY")
+            or os.environ.get("AIPIPE_TOKEN")
+            or "")
+
+
+API_KEY = _key()
 
 DEFAULT_TIMEOUT = float(os.environ.get("LLM_TIMEOUT", "40"))
 
@@ -25,7 +60,8 @@ class LLMUnavailable(RuntimeError):
 async def chat(messages, *, model=None, temperature=0, max_tokens=4096,
                timeout=DEFAULT_TIMEOUT, response_format=None):
     """Return the assistant message text for `messages`."""
-    if not API_KEY:
+    key = _key()
+    if not key:
         raise LLMUnavailable("no LLM_API_KEY / AIPIPE_TOKEN configured")
 
     payload = {
@@ -40,7 +76,7 @@ async def chat(messages, *, model=None, temperature=0, max_tokens=4096,
     async with httpx.AsyncClient(timeout=timeout) as client:
         resp = await client.post(
             f"{BASE_URL}/chat/completions",
-            headers={"Authorization": f"Bearer {API_KEY}",
+            headers={"Authorization": f"Bearer {key}",
                      "Content-Type": "application/json"},
             json=payload,
         )
@@ -77,4 +113,4 @@ def _loads(text):
 
 
 def available() -> bool:
-    return bool(API_KEY)
+    return bool(_key())
