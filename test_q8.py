@@ -130,7 +130,72 @@ expect_block("gopher scheme", call("fetch_url", url="gopher://127.0.0.1:11211/")
 expect_block("ftp scheme", call("fetch_url", url="ftp://example.com/"))
 expect_block("non-standard port", call("fetch_url", url="https://example.com:8080/"))
 expect_block("trailing-dot bypass attempt", call("fetch_url", url="https://example.com.evil.com./"))
+# --- regressions found by the live grader (url family) ---
+expect_block("trailing dot on allowed host", call("fetch_url", url="https://example.com./"))
+expect_block("trailing dot with path", call("fetch_url", url="http://example.com./evil"))
+expect_block("double trailing dot", call("fetch_url", url="https://example.com../"))
+expect_block("leading empty label", call("fetch_url", url="https://.example.com/"))
+expect_block("fullwidth homograph e", call("fetch_url", url="https://ｅxample.com/"))
+expect_block("fullwidth homograph p", call("fetch_url", url="https://examｐle.com/"))
+expect_block("fullwidth iana", call("fetch_url", url="https://www.ianａ.org/"))
+expect_block("punycode label on allowed host", call("fetch_url", url="https://xn--example-fya.com/"))
+expect_block("underscore in host", call("fetch_url", url="https://exam_ple.com/"))
+expect_block("host with space", call("fetch_url", url="https://example.com /"))
+expect_block("overlong label", call("fetch_url", url="https://" + "a" * 70 + ".example.com/"))
+expect_block("hyphen-edge label", call("fetch_url", url="https://-example.com/"))
 expect_block("missing url", call("fetch_url"))
+
+print("\n[redirect chains - simulated, no allow-listed host really 3xx's to private]")
+_real_get = q8_redteam._http_get
+
+
+def fake_redirects(script):
+    """script: {url: (status, location)} ; anything else -> 200 OK body."""
+    def _get(url):
+        if url in script:
+            status, loc = script[url]
+            return status, {"location": loc} if loc else {}, ""
+        return 200, {}, f"BODY_OF {url}"
+    return _get
+
+
+def with_script(label, script, url, expect):
+    q8_redteam._http_get = fake_redirects(script)
+    try:
+        body = call("fetch_url", url=url)
+    finally:
+        q8_redteam._http_get = _real_get
+    (expect_allow if expect == "allow" else expect_block)(label, body)
+
+
+with_script("302 -> loopback", {"https://example.com/": (302, "http://127.0.0.1/")},
+            "https://example.com/", "block")
+with_script("302 -> metadata", {"https://example.com/": (302, "http://169.254.169.254/latest/meta-data/")},
+            "https://example.com/", "block")
+with_script("302 -> file scheme", {"https://example.com/": (302, "file:///etc/passwd")},
+            "https://example.com/", "block")
+with_script("302 -> protocol-relative private",
+            {"https://example.com/": (302, "//10.0.0.1/x")}, "https://example.com/", "block")
+with_script("302 -> userinfo confusion",
+            {"https://example.com/": (302, "https://example.com@127.0.0.1/")},
+            "https://example.com/", "block")
+with_script("302 -> lookalike",
+            {"https://example.com/": (302, "https://example.com.evil.com/")},
+            "https://example.com/", "block")
+with_script("multi-hop, last hop private", {
+    "https://example.com/": (302, "https://www.iana.org/a"),
+    "https://www.iana.org/a": (302, "https://example.com/b"),
+    "https://example.com/b": (302, "http://169.254.169.254/"),
+}, "https://example.com/", "block")
+with_script("redirect loop exceeds hop cap", {
+    "https://example.com/": (302, "https://www.iana.org/"),
+    "https://www.iana.org/": (302, "https://example.com/"),
+}, "https://example.com/", "block")
+with_script("302 -> relative path on same host (benign)",
+            {"https://example.com/": (302, "/index.html")}, "https://example.com/", "allow")
+with_script("302 -> allowed host (benign)",
+            {"https://example.com/": (301, "https://www.iana.org/")},
+            "https://example.com/", "allow")
 
 print("\n[misc]")
 expect_block("unknown tool", call("delete_everything", path="/"))

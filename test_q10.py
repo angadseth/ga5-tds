@@ -28,6 +28,9 @@ BASE = "https://ga5-tds.onrender.com/a2a/"
 H = {"A2A-Version": "1.0", "Content-Type": "application/a2a+json"}
 ALICE = dict(H, Authorization="Bearer alice-token")
 BOB = dict(H, Authorization="Bearer bob-token")
+# Third principal used only for header/Content-Type probes, so the tenant-isolation
+# assertions on Alice can stay strict equalities.
+CAROL = dict(H, Authorization="Bearer carol-token")
 
 PASS, FAIL = [], []
 
@@ -173,6 +176,74 @@ check("card: defaultOutputModes has both output modes",
       q10_a2a.MODE_PROPOSALS in card["defaultOutputModes"]
       and q10_a2a.MODE_RECEIPTS in card["defaultOutputModes"])
 check("card: public (no auth needed)", client.get("/.well-known/agent-card.json").status_code == 200)
+
+# --------------------------------------------------------- content types
+
+A2A_CT = "application/a2a+json"
+
+
+def ctype(resp):
+    return (resp.headers.get("content-type") or "").split(";")[0].strip().lower()
+
+
+_probe = send_body(make_batch("BATCH-CT", prefix="CT"), "m-ctype")
+_ct_send = client.post("/a2a/message:send", json=_probe, headers=CAROL)
+_ct_task = sent_task(_ct_send)["id"]
+check("Content-Type: message:send -> a2a+json", ctype(_ct_send) == A2A_CT, ctype(_ct_send))
+check("Content-Type: task read -> a2a+json",
+      ctype(client.get(f"/a2a/tasks/{_ct_task}", headers=CAROL)) == A2A_CT)
+check("Content-Type: task list -> a2a+json",
+      ctype(client.get("/a2a/tasks", headers=CAROL)) == A2A_CT)
+check("Content-Type: 401 no auth -> a2a+json",
+      ctype(client.get("/a2a/tasks", headers={"A2A-Version": "1.0"})) == A2A_CT)
+check("Content-Type: 400 wrong version -> a2a+json",
+      ctype(client.get("/a2a/tasks", headers=dict(CAROL, **{"A2A-Version": "9.9"}))) == A2A_CT)
+check("Content-Type: 404 unknown task -> a2a+json",
+      ctype(client.get("/a2a/tasks/task_nope", headers=CAROL)) == A2A_CT)
+_conf = client.post("/a2a/message:send",
+                    json=send_body(make_batch("BATCH-CT-X", prefix="CT"), "m-ctype"),
+                    headers=CAROL)
+check("Content-Type: 409 conflict -> a2a+json",
+      _conf.status_code == 409 and ctype(_conf) == A2A_CT, f"{_conf.status_code} {ctype(_conf)}")
+_422 = client.post("/a2a/message:send",
+                   json={"message": {"messageId": "m-ct422", "role": "ROLE_USER",
+                                     "parts": [{"mediaType": q10_a2a.MODE_BATCH,
+                                                "data": {"batchId": "B", "packages": []}}]}},
+                   headers=CAROL)
+check("Content-Type: 422 schema -> a2a+json",
+      _422.status_code == 422 and ctype(_422) == A2A_CT, f"{_422.status_code} {ctype(_422)}")
+check("Content-Type: cancel -> a2a+json",
+      ctype(client.post(f"/a2a/tasks/{_ct_task}:cancel", headers=CAROL)) == A2A_CT)
+check("Content-Type: agent card defaults to application/json",
+      ctype(client.get("/.well-known/agent-card.json")) == "application/json",
+      ctype(client.get("/.well-known/agent-card.json")))
+check("Content-Type: agent card honours an a2a+json Accept",
+      ctype(client.get("/.well-known/agent-card.json",
+                       headers={"Accept": A2A_CT})) == A2A_CT)
+
+# ------------------------------------------------- liberal request accept
+
+for label, hdrs in [
+    ("a2a+json with charset", dict(CAROL, **{"Content-Type": "application/a2a+json; charset=utf-8"})),
+    ("plain application/json", dict(CAROL, **{"Content-Type": "application/json"})),
+]:
+    rr = client.post("/a2a/message:send",
+                     json=send_body(make_batch("BATCH-CT", prefix="CT"), "m-ctype"),
+                     headers=hdrs)
+    check(f"accepts request Content-Type: {label}", rr.status_code == 200,
+          f"{rr.status_code} {rr.text[:100]}")
+rr = client.post("/a2a/message:send", content=json.dumps(
+    send_body(make_batch("BATCH-CT", prefix="CT"), "m-ctype")),
+    headers={"Authorization": "Bearer carol-token", "A2A-Version": "1.0"})
+check("accepts request with NO Content-Type header", rr.status_code == 200,
+      f"{rr.status_code} {rr.text[:100]}")
+rr = client.post("/a2a/message:send", content="not json",
+                 headers=dict(CAROL, **{"Content-Type": "text/plain"}))
+check("still rejects a genuinely non-JSON Content-Type", rr.status_code == 415,
+      str(rr.status_code))
+check("GET needs no Content-Type",
+      client.get("/a2a/tasks", headers={"Authorization": "Bearer carol-token",
+                                        "A2A-Version": "1.0"}).status_code == 200)
 
 # ------------------------------------------------------------ auth/version
 

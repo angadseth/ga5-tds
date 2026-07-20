@@ -23,12 +23,50 @@ import threading
 import time
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.routing import APIRoute
 
 from llm import chat_json
 
-router = APIRouter()
+A2A_MEDIA_TYPE = "application/a2a+json"
+JSON_MEDIA_TYPE = "application/json"
+
+
+class A2AJSONResponse(JSONResponse):
+    """A2A payloads are `application/a2a+json`, not FastAPI's default."""
+
+    media_type = A2A_MEDIA_TYPE
+
+
+class A2ARoute(APIRoute):
+    """Force the A2A media type onto every /a2a/* response, errors included.
+
+    FastAPI's own HTTPException/validation handlers run outside the endpoint
+    and would answer with `application/json`, so they are caught here and
+    re-emitted as A2A errors.
+    """
+
+    def get_route_handler(self):
+        original = super().get_route_handler()
+
+        async def handler(request: Request):
+            try:
+                response = await original(request)
+            except HTTPException as exc:
+                response = err(exc.status_code, "A2A_ERROR", str(exc.detail))
+            except RequestValidationError:
+                response = err(422, "INVALID_ARGUMENT",
+                               "request failed schema validation")
+            if request.url.path.startswith("/a2a"):
+                response.headers["content-type"] = A2A_MEDIA_TYPE
+            return response
+
+        return handler
+
+
+router = APIRouter(route_class=A2ARoute)
 
 BASE_URL = os.environ.get("A2A_BASE_URL", "https://ga5-tds.onrender.com/a2a/")
 DB_PATH = os.environ.get("GA5_DB", "/tmp/ga5.db")
@@ -157,7 +195,7 @@ def now_iso():
 def err(status, code, message, **extra):
     body = {"error": dict({"code": code, "message": message}, **extra),
             "code": code, "message": message}
-    return JSONResponse(body, status_code=status)
+    return A2AJSONResponse(body, status_code=status)
 
 
 def principal_of(request):
@@ -182,10 +220,13 @@ def check_headers(request, *, body=False):
         return None, err(400, "UNSUPPORTED_VERSION",
                          "this agent implements A2A protocol version 1.0 only")
     if body:
+        # Liberal in what we accept: application/a2a+json, plain application/json,
+        # either with parameters, or an omitted header. Only a genuinely
+        # non-JSON body type is refused.
         ctype = (request.headers.get("content-type") or "").split(";")[0].strip().lower()
-        if "json" not in ctype:
+        if ctype and "json" not in ctype:
             return None, err(415, "UNSUPPORTED_MEDIA_TYPE",
-                             "expected content type application/a2a+json")
+                             f"expected content type {A2A_MEDIA_TYPE}")
     return who, None
 
 
@@ -245,14 +286,24 @@ AGENT_CARD = {
 }
 
 
+def card_response(request):
+    """The spec registers application/a2a+json but never fixes the card's own
+    type, and the discovery document is conventionally application/json. So
+    negotiate: a client that asks for A2A JSON gets it, everyone else gets
+    plain JSON."""
+    accept = (request.headers.get("accept") or "").lower()
+    media = A2A_MEDIA_TYPE if "a2a+json" in accept else JSON_MEDIA_TYPE
+    return JSONResponse(AGENT_CARD, media_type=media)
+
+
 @router.get("/.well-known/agent-card.json")
-async def agent_card():
-    return AGENT_CARD
+async def agent_card(request: Request):
+    return card_response(request)
 
 
 @router.get("/.well-known/agent.json")
-async def agent_card_legacy():
-    return AGENT_CARD
+async def agent_card_legacy(request: Request):
+    return card_response(request)
 
 
 # ------------------------------------------------------- document handling
@@ -662,12 +713,12 @@ def agent_message(task_id, context_id, text, suffix):
 
 def task_response(task):
     """Reads and cancellation return a bare Task."""
-    return JSONResponse(task)
+    return A2AJSONResponse(task)
 
 
 def task_envelope(task):
     """message:send is the one route that wraps its Task in {"task": ...}."""
-    return JSONResponse({"task": task})
+    return A2AJSONResponse({"task": task})
 
 
 # --------------------------------------------------------- message:send
@@ -969,7 +1020,7 @@ async def list_tasks(request: Request):
         rows = db().execute(
             "SELECT doc FROM q10_tasks WHERE principal=? ORDER BY created",
             (who,)).fetchall()
-    return {"tasks": [json.loads(r["doc"]) for r in rows]}
+    return A2AJSONResponse({"tasks": [json.loads(r["doc"]) for r in rows]})
 
 
 @router.get("/a2a/tasks/{task_id}")

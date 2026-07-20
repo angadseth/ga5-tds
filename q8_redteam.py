@@ -11,6 +11,7 @@ filesystem operation goes through that mapping.
 import ipaddress
 import os
 import posixpath
+import re
 import socket
 import tempfile
 from urllib.parse import unquote, urlsplit
@@ -50,6 +51,8 @@ BLOCKED_TARGETS = {
 MAX_PATH_LEN = 4096
 MAX_REDIRECTS = 3
 HTTP_TIMEOUT = 5.0
+
+_LDH_LABEL = re.compile(r"^[a-z0-9-]+$")
 
 
 # --------------------------------------------------------------------------
@@ -246,16 +249,46 @@ def _is_bad_ip(ip_str: str) -> bool:
 
 
 def _canonical_host(host):
-    """Lowercase + IDNA-encode a hostname, defeating unicode homographs."""
-    if not host:
-        return None
-    h = host.strip().strip(".").lower()
-    if not h:
-        return None
-    try:
-        return h.encode("idna").decode("ascii")
-    except (UnicodeError, ValueError):
-        return None
+    """Canonicalize a hostname for EXACT allow-list matching.
+
+    Deliberately does no lenient folding: no trailing-dot stripping and no
+    IDNA/NFKC nameprep. Both would map distinct wire hostnames onto an
+    allow-listed name (`example.com.`, `.example.com`, fullwidth `ｅxample.com`
+    all NFKC/strip down to `example.com`). Returns (host, error).
+    """
+    if not isinstance(host, str) or not host:
+        return None, "empty hostname"
+    # Deliberately NOT stripped: surrounding whitespace on the whole URL is
+    # already handled by the caller, so whitespace surviving into the
+    # authority is a smuggling attempt, not sloppy input.
+    h = host
+    if any(ord(c) > 127 for c in h):
+        return None, "non-ASCII hostname (possible homograph)"
+    h = h.lower()
+    if len(h) > 253:
+        return None, "hostname too long"
+    if any(c in h for c in "\t\r\n \x00_%\\/?#"):
+        return None, "illegal character in hostname"
+    return h, None
+
+
+def _check_hostname_syntax(h):
+    """Reject anything that is not a plain, exactly-spelled LDH hostname."""
+    if h.startswith(".") or h.endswith("."):
+        return "hostname has an empty leading/trailing label"
+    labels = h.split(".")
+    for label in labels:
+        if not label:
+            return "hostname has an empty label"
+        if len(label) > 63:
+            return "hostname label too long"
+        if label.startswith("xn--"):
+            return "punycode/IDN hostname is not allowed"
+        if label.startswith("-") or label.endswith("-"):
+            return "malformed hostname label"
+        if not _LDH_LABEL.match(label):
+            return "illegal character in hostname"
+    return None
 
 
 def check_url(raw_url):
@@ -286,9 +319,9 @@ def check_url(raw_url):
     if port is not None and port not in (80, 443):
         return False, f"port {port} not allowed", None
 
-    canon = _canonical_host(host)
-    if canon is None:
-        return False, "invalid hostname", None
+    canon, err = _canonical_host(host)
+    if err:
+        return False, err, None
 
     # IP literals never match the allow-list, but say so explicitly.
     try:
@@ -296,6 +329,10 @@ def check_url(raw_url):
         return False, "raw IP addresses are not allowed", canon
     except ValueError:
         pass
+
+    err = _check_hostname_syntax(canon)
+    if err:
+        return False, err, canon
 
     if canon not in ALLOWED_HOSTS:
         return False, f"host {canon} not in allow-list", canon
