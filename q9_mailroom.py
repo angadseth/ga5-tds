@@ -381,6 +381,9 @@ FOLLOWUP_CLAUSE = "no new change or outbound response is requested"
 # is served one way, so its grader feedback stays unambiguous.
 NO_ACTION_PROBE = True
 
+# See the create_draft branch: three evidence/target readings, one Check run.
+CREATE_DRAFT_PROBE = True
+
 
 def _variant(dossier_id, buckets=2):
     """Stable per-dossier bucket: the same dossier always gets the same one."""
@@ -534,16 +537,32 @@ def deterministic_decision(dossier):
         # only the customer address has to come from the mail itself.
         # The rule says to draft in the OWNING mailbox, and where the dossier
         # separates the two ("the mailbox route is X, while ownership remains
-        # with Y") the header field is the route, not the owner. Y is an
-        # argument like any other, so the line stating it is cited too.
+        # with Y") the header field is the route, not the owner - but that line
+        # also says it "does not itself authorize a side effect", which is how
+        # this corpus marks a decoy. Nothing offline settles it, and the same is
+        # true of the enquiry line: it names the order and is the sentence that
+        # makes this an enquiry at all, yet the record already carries the order.
+        #
+        # So the corpus is split three ways and the grader answers it. Read the
+        # per-dossier verdicts out of the next commit request, keep the variant
+        # that was accepted, and set CREATE_DRAFT_PROBE = False.
+        #   0  record + gateway, mailbox = the header route      (what we had)
+        #   1  enquiry + gateway + record, mailbox = the route
+        #   2  record + gateway + ownership, mailbox = the owner
         fields = {"recipient": mm.group(1),
                   "referenceId": rm.group(1),
                   "status": rm.group(3)}
+        variant = _variant(dossier.get("dossierId") or "", 3) if CREATE_DRAFT_PROBE else 0
         evidence = [rlid, mlid]
-        olid, om = _find_any(dossier, RE_OWNERSHIP)
-        if om:
-            fields["mailbox"] = om.group(2)
-            evidence.append(olid)
+        if variant == 1:
+            elid, _em = _find(mlines, re.compile(re.escape(ENQUIRY_CLAUSE)))
+            if elid:
+                evidence.append(elid)
+        elif variant == 2:
+            olid, om = _find_any(dossier, RE_OWNERSHIP)
+            if om:
+                fields["mailbox"] = om.group(2)
+                evidence.append(olid)
         return {"action": "create_draft", "evidence": sorted(set(evidence)),
                 "fields": fields}
     return None
