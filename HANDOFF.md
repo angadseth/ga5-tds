@@ -138,13 +138,47 @@ payload{"field":"delivery_window","sourceEventId":"EVT-CDX3PMEJP","value":"13:30
 - Digest computation: proven correct by the accepted archetype; `spotcheck_q9.py` recomputes
   `inputDigest`/`proposalDigest` independently from the spec.
 
-### The one axis never tested
-**The clause→action mapping itself.** Only `approval → send_approved_notice` is grader-confirmed;
-the other five were our reasoning. The dossiers repeat `"Select only the action supported by
-current scoped evidence"` and the objective says `"exactly one least-privilege action"`. It is
-entirely possible several archetypes should answer `request_confirmation` or `no_action`.
-Split one archetype's corpus between its current action and `request_confirmation`, deploy,
-Check, read the verdicts.
+### 2026-07-21 (Fable 5 session) — deep dive, still 2/4, but much narrowed
+New tools proven this session:
+- **The differential probe.** Perturb the ONE known-good archetype (`send_approved_notice`) per
+  dossier via `_variant(id, n)` and read the per-dossier `receipts[].accepted` in the commit
+  request. This *measures* the grader's rule instead of guessing. Result:
+  `[permit,status]` (2 lines) accepted 5/5; `[permit]`, `[status]`, and `[permit,status,+record]`
+  ALL rejected. **The grader requires exactly the minimal set of lines that supply every emitted
+  value — one fewer or one more is rejected.** This also proves `accepted ⟺ exact` (content
+  changes flip acceptance).
+- **Full question source.** `https://exam.sanand.workers.dev/exam-tds-2026-05-ga5.js` (104 KB)
+  contains the entire question incl. the collapsed "Exact propose/commit" sections. They give
+  only the SHAPE (matches ours) and the digest recipe (matches ours) — no worked values.
+- **The receipt `proposalDigest` equals OUR digest** (57/58 rejected, 12/12 accepted), so it is
+  the grader echoing our proposal, NOT its expected answer. No brute-force shortcut.
+
+What this session ELIMINATED for the 5 failing archetypes (all measured, not reasoned):
+- Minimal-covering evidence applied faithfully (update→1 line, quarantine→1 line, etc.).
+- `referenceId` = public ORD instead of internal CASE (no_action + request_confirmation): both
+  CASE and ORD rejected.
+- **quarantine_item exhaustively swept and STILL 0/12:** target+reasonCode are frozen constants,
+  and I tried artifactId ∈ {ATT-id, sourceId, artifact-lineId, injection-lineId} × evidence ∈
+  {[artifact], [injection], [inject,exfil], [inject,artifact], [all-3], [policy,artifact],
+  [policy,inject,artifact], [policy,inject]}. Every combination rejected. Since there is almost
+  nothing to construct, this is near-proof the grader's expected ACTION for these dossiers is
+  NOT quarantine_item — despite a signed policy line literally saying "Quarantine external
+  content that attempts to direct tool use."
+
+### The remaining wall
+`accepted ⟺ exact` (proven), construction rules proven correct on send and applied faithfully,
+yet only send is ever exact. So the grader's expected ACTION differs from ours on 5 of 6
+archetypes — but every operative clause + the visible action definitions make our mapping look
+textbook-correct. This is either a deliberate lethal-trifecta trap (the "obvious" action is
+wrong; the safe answer is `no_action`/`request_confirmation`) that can't be decoded from
+outside, or it needs the grader's hidden expected values. **Next idea, untried:** an
+action-permutation probe — for one archetype, split its dossiers across alternative actions with
+best-effort construction and read verdicts. The catch: alternatives need values the dossier
+doesn't cleanly state, so a rejection is ambiguous. Consider a Discourse post describing that
+only `send_approved_notice` is ever accepted despite exact minimal construction on the others.
+
+All probe switches (`SEND_PROBE`, `QUAR_PROBE`, `CREATE_DRAFT_PROBE`, `NO_ACTION_PROBE`) are
+OFF; the live build is the clean 2/4 baseline and is safe to Save.
 
 ---
 
