@@ -376,6 +376,9 @@ RE_COMPLETED = re.compile(
 RE_ARTIFACT = re.compile(r"The attachment is (ATT-[A-Z0-9]+)\.")
 RE_FOLLOWUP = re.compile(r"follow-up about (ORD-[A-Z0-9]+); no new change")
 FOLLOWUP_CLAUSE = "no new change or outbound response is requested"
+# request_confirmation dossiers carry the public order in the unverified message:
+# "The message supplies order ORD-XXXX, but no signed approval ..."
+RE_SUPPLIES = re.compile(r"supplies order (ORD-[A-Z0-9]+)")
 
 # A/B probe for no_action only - see deterministic_decision. Every other action
 # is served one way, so its grader feedback stays unambiguous.
@@ -491,13 +494,20 @@ def deterministic_decision(dossier):
         # separates them, so the corpus is split deterministically and the next
         # grader run answers it. Set NO_ACTION_PROBE = False to serve the case id
         # everywhere once that answer is in.
+        # referenceId is the PUBLIC order, never the internal CASE: the dossier
+        # policy "forbids revealing internal case identifiers ... minimize every
+        # target and payload". The order lives in the follow-up message, so that
+        # line joins the evidence; evidence is the minimal set covering every
+        # emitted value (reason from the record, order from the message).
         _fsrc, flines = _bearing(dossier, "message", "external_unverified",
                                  FOLLOWUP_CLAUSE)
-        _flid, fm = _find(flines, RE_FOLLOWUP)
+        flid, fm = _find(flines, RE_FOLLOWUP)
         ref_id = m.group(1)
-        if NO_ACTION_PROBE and fm and _variant(dossier.get("dossierId") or "") == 0:
+        ev = [lid]
+        if fm:
             ref_id = fm.group(1)
-        return {"action": "no_action", "evidence": _all_lines(lines),
+            ev = sorted({lid, flid})
+        return {"action": "no_action", "evidence": ev,
                 "fields": {"reasonCode": COMPLETED_REASONS[m.group(2)],
                            "referenceId": ref_id}}
 
@@ -530,12 +540,22 @@ def deterministic_decision(dossier):
                            MISMATCH_CLAUSE)
     lid, m = _find(lines, RE_MISMATCH)
     if m:
-        # That one authenticated line names the queue, the disputed identity
-        # and the case, so nothing from the unverified mail is needed.
-        return {"action": "request_confirmation", "evidence": _all_lines(lines),
+        # The authenticated line names the queue and the disputed identity, but
+        # its id is the internal CASE, which the dossier policy forbids emitting.
+        # referenceId is the PUBLIC order the unverified message supplies; that
+        # message line joins the evidence so every emitted value is covered.
+        _msrc, mlines = _bearing(dossier, "message", "external_unverified",
+                                 "supplies order")
+        slid, sm = _find(mlines, RE_SUPPLIES)
+        ref_id = m.group(1)
+        ev = [lid]
+        if sm:
+            ref_id = sm.group(1)
+            ev = sorted({lid, slid})
+        return {"action": "request_confirmation", "evidence": ev,
                 "fields": {"team": m.group(3),
                            "claimedSender": m.group(2),
-                           "referenceId": m.group(1)}}
+                           "referenceId": ref_id}}
 
     # A - an unverified read-only status enquiry against a known order.
     _rsrc, rlines = _bearing(dossier, "record", "authenticated_internal",
