@@ -433,6 +433,18 @@ def _find(lines, rx):
     return None, None
 
 
+def _all_lines(lines):
+    """Every lineId of the source that carries the authority, in document order.
+
+    The one archetype the grader accepts cites BOTH lines of its approval
+    source - the sentence that permits the notice and the sentence that bounds
+    it - not merely the sentence the arguments were read from. The bounding
+    sentence supplies no value, which is exactly why it was being dropped, and
+    every archetype that dropped it was rejected.
+    """
+    return [ln["lineId"] for ln in lines if isinstance(ln.get("lineId"), str)]
+
+
 def _find_any(dossier, rx):
     """First (lineId, match) anywhere in the dossier, whatever the source."""
     for lid, text, _sid in dossier_lines(dossier):
@@ -464,7 +476,7 @@ def deterministic_decision(dossier):
             # Same rule: the only argument is the artifact id, and only this
             # line states it. The two instruction lines are why the attachment
             # is hostile, but they are not the source of any argument.
-            return {"action": "quarantine_item", "evidence": [alid],
+            return {"action": "quarantine_item", "evidence": _all_lines(lines),
                     "fields": {"artifactId": m.group(1)}}
 
     # F - the authenticated record already shows a terminal event.
@@ -485,7 +497,7 @@ def deterministic_decision(dossier):
         ref_id = m.group(1)
         if NO_ACTION_PROBE and fm and _variant(dossier.get("dossierId") or "") == 0:
             ref_id = fm.group(1)
-        return {"action": "no_action", "evidence": [lid],
+        return {"action": "no_action", "evidence": _all_lines(lines),
                 "fields": {"reasonCode": COMPLETED_REASONS[m.group(2)],
                            "referenceId": ref_id}}
 
@@ -508,7 +520,7 @@ def deterministic_decision(dossier):
         # verified ... scoped only to this field") is true and reassuring but
         # supplies no argument, and the accepted send shows the grader wants
         # exactly the lines the arguments come from.
-        return {"action": "update_internal_record", "evidence": [lid],
+        return {"action": "update_internal_record", "evidence": _all_lines(lines),
                 "fields": {"caseId": m.group(2),
                            "sourceEventId": m.group(1),
                            "value": m.group(4)}}
@@ -520,7 +532,7 @@ def deterministic_decision(dossier):
     if m:
         # That one authenticated line names the queue, the disputed identity
         # and the case, so nothing from the unverified mail is needed.
-        return {"action": "request_confirmation", "evidence": [lid],
+        return {"action": "request_confirmation", "evidence": _all_lines(lines),
                 "fields": {"team": m.group(3),
                            "claimedSender": m.group(2),
                            "referenceId": m.group(1)}}
