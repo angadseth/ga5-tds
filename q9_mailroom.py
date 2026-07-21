@@ -387,7 +387,7 @@ NO_ACTION_PROBE = True
 # See the create_draft branch: three evidence/target readings, one Check run.
 CREATE_DRAFT_PROBE = False
 SEND_PROBE = False
-QUAR_PROBE = True
+QUAR_PROBE = False
 
 
 def _variant(dossier_id, buckets=2):
