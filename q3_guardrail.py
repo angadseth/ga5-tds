@@ -278,8 +278,13 @@ def check_write(path):
 
     for text in expand(path):
         stripped = text.strip()
-        if not stripped.startswith("/") and not stripped.startswith(("~", "$")):
-            return "block", "Relative write path is not allowed; writes must be inside %s/." % WRITE_ROOT
+        if not stripped:
+            return "block", "write_file requires a path."
+        # Resolve every form to an absolute path and judge only by where it
+        # LANDS. A relative path (or a `..` chain) that lands back inside the
+        # write root is legal; one that lands anywhere else is not. Blanket-
+        # blocking relative paths over-blocked a traversal that resolves into
+        # /srv/reports.
         canon = canonicalize(stripped, CWD)
         if canon == SECRET:
             return "block", "Writing to the restricted secret file is never permitted."
