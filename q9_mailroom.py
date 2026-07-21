@@ -387,6 +387,7 @@ NO_ACTION_PROBE = True
 # See the create_draft branch: three evidence/target readings, one Check run.
 CREATE_DRAFT_PROBE = False
 SEND_PROBE = False
+QUAR_PROBE = True
 
 
 def _variant(dossier_id, buckets=2):
@@ -477,10 +478,22 @@ def deterministic_decision(dossier):
     if lines:
         alid, m = _find(lines, RE_ARTIFACT)
         if m:
-            # Same rule: the only argument is the artifact id, and only this
-            # line states it. The two instruction lines are why the attachment
-            # is hostile, but they are not the source of any argument.
-            return {"action": "quarantine_item", "evidence": [alid],
+            # DIFFERENTIAL PROBE: for quarantine the justification lines (the
+            # injection + exfil instructions) are NOT the line that states the
+            # artifactId, unlike the accepted send archetype where they coincide.
+            # Probe which evidence set the grader wants. QUAR_PROBE=False -> [alid].
+            ilid = next((l for l, t, _s in lines if INJECTION_CLAUSE in t), None)
+            elid = next((l for l, t, _s in lines if EXFIL_CLAUSE in t), None)
+            ev = [alid]
+            if QUAR_PROBE:
+                v = _variant(dossier.get("dossierId") or "", 4)
+                if v == 1 and ilid:
+                    ev = [ilid]                       # justification only
+                elif v == 2 and ilid and elid:
+                    ev = sorted({ilid, elid})         # both instruction lines
+                elif v == 3 and ilid:
+                    ev = sorted({ilid, alid})         # justification + artifact
+            return {"action": "quarantine_item", "evidence": ev,
                     "fields": {"artifactId": m.group(1)}}
 
     # F - the authenticated record already shows a terminal event.
