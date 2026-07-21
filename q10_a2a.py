@@ -142,7 +142,36 @@ def db():
             """
         )
         _conn.commit()
+        _load_seed_cache(_conn)
     return _conn
+
+
+def _load_seed_cache(conn):
+    """Warm q10_pkgcache from a cache shipped with the code.
+
+    The package cache is keyed by a hash of the package text, so it is already
+    content-addressed and safe to prime. It has to be primed from disk because
+    the host's filesystem is ephemeral: every restart or redeploy drops the
+    database, and the stable core would then be re-analysed. Re-analysis is not
+    free and, more importantly, is not reproducible - the same prompt at
+    temperature 0 still moves a package or two, and a verification that reruns
+    the batch after a restart disagrees with the one before it. Seeding pins
+    the stable core to one set of answers for good.
+    """
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "q10_seed.json")
+    try:
+        with open(path, encoding="utf-8") as fh:
+            seed = json.load(fh)
+    except (OSError, ValueError):
+        return
+    rows = [(fp, json.dumps(d, sort_keys=True)) for fp, d in seed.items()
+            if isinstance(fp, str) and isinstance(d, dict) and d.get("action") in ACTIONS]
+    if not rows:
+        return
+    # INSERT OR IGNORE: anything already decided in this database wins, so a
+    # live answer is never overwritten by the snapshot.
+    conn.executemany("INSERT OR IGNORE INTO q10_pkgcache(pkg_fp,decision) VALUES(?,?)", rows)
+    conn.commit()
 
 
 def load_task(task_id):

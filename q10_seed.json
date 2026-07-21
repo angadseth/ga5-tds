@@ -1,0 +1,1024 @@
+{
+"081b3f837531cd4fd902854bb31787d61d099b075cf9796c4106f71e11fd5c31": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_RPEVZKK9FGAYWM",
+"R_ISMVA5QMKMUAVD"
+],
+"facts": {
+"amountMinor": 293224,
+"currency": "USD",
+"invoiceNumber": "INV-2025-613893",
+"vendorName": "Juniper Vale Consulting"
+},
+"rationale": "Action reject_duplicate was chosen for invoice INV-2025-613893 from Juniper Vale Consulting for 293224 minor units of USD. The decisive evidence is 'R_RPEVZKK9FGAYWM' and 'R_ISMVA5QMKMUAVD'. Analyst note: reject_duplicate is appropriate as this claim links to an earlier settled entry with matching supplier, invoice, currency, and amount, as indicated in the ledger-and-correspondence document [R_RPEVZKK9FGAYWM]. This constitutes a duplicate invoice."
+},
+"0832d02bdb9fd1f13d44b26f27d0c00e2460c16011c4e0e49edbcc63d9c979e5": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_B6O3JVCRT7KKAQ",
+"R_QV6FQGFNZUNGFS"
+],
+"facts": {
+"amountMinor": 1054483,
+"currency": "USD",
+"invoiceNumber": "INV-2024-731429",
+"vendorName": "Indigo Circuit Supply"
+},
+"rationale": "settle_invoice is appropriate as the signed purchase order and invoice line totals agree within the stated rounding tolerance, and there is no earlier posting for this supplier and invoice identifier, as confirmed in the ledger [R_B6O3JVCRT7KKAQ] and [R_QV6FQGFNZUNGFS]. No conditions for hold, approval, or duplicates apply."
+},
+"0cca0c295355d14cd2b61939a10306800cc95c4fb2115d64267821281c5bb73c": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_FVLNHBHGVFCYB8",
+"R_VH96KTOTCVDYND"
+],
+"facts": {
+"amountMinor": 616547,
+"currency": "INR",
+"invoiceNumber": "INV-2026-423859",
+"vendorName": "Cedar Arc Logistics"
+},
+"rationale": "Action hold_invoice was chosen for invoice INV-2026-423859 from Cedar Arc Logistics for 616547 minor units of INR. The decisive evidence is 'R_FVLNHBHGVFCYB8' and 'R_VH96KTOTCVDYND'. Analyst note: hold_invoice is necessary because the only unresolved issue is a requested destination-account change that has not been confirmed, as stated in evidence reference R_VH96KTOTCVDYND, which forbids remittance against changed instructions until the callback closes successfully."
+},
+"0eb13869fd30d40f29050f1cb7c479f7e16d56f07f807356fa8adc70f2366405": {
+"action": "open_exception",
+"evidenceRefs": [
+"R_6J6DMXG7CBLTDR",
+"R_MN8MCSXQKR4VKY"
+],
+"facts": {
+"amountMinor": 1641422,
+"currency": "INR",
+"invoiceNumber": "INV-2025-222938",
+"vendorName": "Blue Kestrel Components"
+},
+"rationale": "open_exception is warranted due to contradictory signed records that cannot be reconciled, as indicated by evidence references R_6J6DMXG7CBLTDR and R_MN8MCSXQKR4VKY."
+},
+"109dc39dd818a7d9d8af072bc491754aff7805e2338f5c9494cdbc72299cfaa0": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_EABZNZR9ZYPCTV",
+"R_VHWWDBVZJCZ2RC"
+],
+"facts": {
+"amountMinor": 727167,
+"currency": "USD",
+"invoiceNumber": "INV-2026-139089",
+"vendorName": "Delta Loom Works"
+},
+"rationale": "Action hold_invoice was chosen for invoice INV-2026-139089 from Delta Loom Works for 727167 minor units of USD. The decisive evidence is 'R_EABZNZR9ZYPCTV' and 'R_VHWWDBVZJCZ2RC'. Analyst note: hold_invoice is selected because the payment must pause until verification is completed, as indicated by the completed payment having the same commercial key after identifier normalization [R_EABZNZR9ZYPCTV]. The training example regarding 'hold invoice' does not apply to this case."
+},
+"114d41f6ab0c502e5e0ed14cd4d32a2951dd9b91f1dfe7452400c02821377ee3": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_EEYB5AITCZVD9U",
+"R_TWHRZKKYTNHSVA"
+],
+"facts": {
+"amountMinor": 5936993,
+"currency": "INR",
+"invoiceNumber": "INV-2024-188234",
+"vendorName": "Aster Field Services"
+},
+"rationale": "reject_duplicate is selected because the invoice from Aster Field Services with number INV-2024-188234 for INR 59369.93 has already been paid, as indicated by evidence R_EEYB5AITCZVD9U and R_TWHRZKKYTNHSVA."
+},
+"19c9fc46320502375b2fb6461d488efbe587255854a0592434eccef97657d325": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_HA8GJDCSZCZKGK",
+"R_G2EZSFPJMUQUUR"
+],
+"facts": {
+"amountMinor": 4894563,
+"currency": "EUR",
+"invoiceNumber": "INV-2026-944626",
+"vendorName": "Fjordline Office Systems"
+},
+"rationale": "settle_invoice is appropriate as the invoice from Fjordline Office Systems with number INV-2026-944626 for EUR 48945.63 is fully reconciled with no outstanding issues, as confirmed by evidence R_HA8GJDCSZCZKGK and R_G2EZSFPJMUQUUR."
+},
+"1cbd0cc0959339e4522c58f68a7e144d2f6a5f8c257d0766e5c681a57fb3d8ea": {
+"action": "open_exception",
+"evidenceRefs": [
+"R_GCCZCENJZVJWBI",
+"R_JPYZNGTVFCPCQS"
+],
+"facts": {
+"amountMinor": 6805364,
+"currency": "INR",
+"invoiceNumber": "INV-2025-401755",
+"vendorName": "Aster Field Services"
+},
+"rationale": "open_exception is warranted as the invoice from Aster Field Services with number INV-2025-401755 for INR 68053.64 has conflicting records that cannot be reconciled, as shown in evidence R_GCCZCENJZVJWBI and R_JPYZNGTVFCPCQS."
+},
+"1deb7513b73613312277ff622a007b1aa536ccd4019e436f5748e32b12138157": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_5I9TBGUSZYMAYK",
+"R_PHAH2REVSREGQD"
+],
+"facts": {
+"amountMinor": 3827311,
+"currency": "INR",
+"invoiceNumber": "INV-2026-381242",
+"vendorName": "Delta Loom Works"
+},
+"rationale": "Action settle_invoice was chosen for invoice INV-2026-381242 from Delta Loom Works for 3827311 minor units of INR. The decisive evidence is 'R_5I9TBGUSZYMAYK' and 'R_PHAH2REVSREGQD'. Analyst note: The action chosen is settle_invoice as the invoice from Delta Loom Works, INV-2026-381242, for INR 38273.11 is fully reconciled and there are no outstanding issues or conflicts. The payment ledger confirms no earlier postings for this supplier and invoice identifier, as stated in evidence reference R_PHAH2REVSREGQD."
+},
+"1e727a4ad2441854e8b0ba32fc8602e61cf10f62b6a3ce67f70501e718fc8882": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_G66RR77VRWTAV2",
+"intake-and-cover-sheet.txt"
+],
+"facts": {
+"amountMinor": 1546526,
+"currency": "USD",
+"invoiceNumber": "INV-2025-633544",
+"vendorName": "Juniper Vale Consulting"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2025-633544 from Juniper Vale Consulting for 1546526 minor units of USD. The decisive evidence is 'R_G66RR77VRWTAV2' and 'intake-and-cover-sheet.txt'. Analyst note: request_approval is necessary because the stated total of USD 15465.26 exceeds the autonomous delegation ceiling, which requires a named approver for larger reconciled payments as indicated in evidence reference R_XBHNBUHRZZGQPH."
+},
+"231835cfc27bf3709d79e03a4e43c0a97b01bdbf27f555501a8366d25179132e": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_FCWUZFRN2BHTJC",
+"R_NKMUZHHHMABKUZ"
+],
+"facts": {
+"amountMinor": 5034635,
+"currency": "INR",
+"invoiceNumber": "INV-2024-703353",
+"vendorName": "Cedar Arc Logistics"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2024-703353 from Cedar Arc Logistics for 5034635 minor units of INR. The decisive evidence is 'R_FCWUZFRN2BHTJC' and 'R_NKMUZHHHMABKUZ'. Analyst note: request_approval is necessary as the total exceeds the operator's authority limit, as indicated by evidence reference R_NKMUZHHHMABKUZ."
+},
+"2569f917b6c7da43fd8a35111fd3e370eaf4a1af08f4c74ae313f2a5984af1b1": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_RG86F3HKRYJYER",
+"R_TF9FFWJTBV7TW8"
+],
+"facts": {
+"amountMinor": 7685310,
+"currency": "INR",
+"invoiceNumber": "INV-2025-842240",
+"vendorName": "Delta Loom Works"
+},
+"rationale": "request_approval is necessary as the invoice from Delta Loom Works with number INV-2025-842240 for INR 76853.10 exceeds the operator's authority limit, as shown in evidence R_RG86F3HKRYJYER and R_TF9FFWJTBV7TW8."
+},
+"2d4d1e03db5bf5fb97399b9c4beb5198ed11b6b0fa4c0a61e491d03deb67744f": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_RK7UTVLTCGGMR3",
+"R_WPXCHAHY55GNAG"
+],
+"facts": {
+"amountMinor": 2986182,
+"currency": "USD",
+"invoiceNumber": "INV-2026-603753",
+"vendorName": "Lumen Orchard Media"
+},
+"rationale": "Action hold_invoice was chosen for invoice INV-2026-603753 from Lumen Orchard Media for 2986182 minor units of USD. The decisive evidence is 'R_RK7UTVLTCGGMR3' and 'R_WPXCHAHY55GNAG'. Analyst note: hold_invoice is warranted due to an unresolved issue regarding a requested destination-account change. Treasury forbids remittance against changed instructions until the callback closes successfully, as stated in the ledger-and-correspondence.txt document."
+},
+"2e96a49c7c43adf3cae83de8896493f27c8f6e66115930926cdd8efcd67033e3": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_O47DEVEJGFPYLZ",
+"R_GUBZAFPCXRTPVG"
+],
+"facts": {
+"amountMinor": 3527686,
+"currency": "EUR",
+"invoiceNumber": "INV-2026-487719",
+"vendorName": "Delta Loom Works"
+},
+"rationale": "reject_duplicate is selected because a completed payment has already been made for the same commercial key as indicated in evidence reference R_O47DEVEJGFPYLZ, and the duplicate-control policy requires rejection when the underlying invoice has already been paid as per R_GUBZAFPCXRTPVG."
+},
+"324daef7da0c059884b1f76485e37cf56a933cb496f8f7b5df96ba4e82dd62d6": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_ZNFJUWXCM4VFIU",
+"R_KYGC4OBD7UXRJI"
+],
+"facts": {
+"amountMinor": 3975169,
+"currency": "EUR",
+"invoiceNumber": "INV-2024-568640",
+"vendorName": "Granite Sparrow Foods"
+},
+"rationale": "reject_duplicate is selected because the invoice from Granite Sparrow Foods with number INV-2024-568640 for EUR 39751.69 has already been paid, as indicated by evidence R_ZNFJUWXCM4VFIU and R_KYGC4OBD7UXRJI."
+},
+"3b1c26a7b31ac5a305abe4a806dbe7d01d243f33f5b11175ced2d81b169571b7": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_DQXCSDVGVXPMHS",
+"R_ZVAKDC6AQWI5ED"
+],
+"facts": {
+"amountMinor": 6892113,
+"currency": "EUR",
+"invoiceNumber": "INV-2024-290579",
+"vendorName": "Juniper Vale Consulting"
+},
+"rationale": "Action reject_duplicate was chosen for invoice INV-2024-290579 from Juniper Vale Consulting for 6892113 minor units of EUR. The decisive evidence is 'R_DQXCSDVGVXPMHS' and 'R_ZVAKDC6AQWI5ED'. Analyst note: reject_duplicate is the correct action because a completed payment has already been made for the same commercial key after identifier normalization. The comparison of signed images shows that punctuation introduced by OCR is the only variation, which confirms the duplicate status [R_ZVAKDC6AQWI5ED]."
+},
+"43337082c64502a613c88e01b08f04ba612c9701e154c2dc85cd4a09bd690b27": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_BQBBOGJZEBZZNN",
+"R_CZ3ZMTMWYNQEZ6"
+],
+"facts": {
+"amountMinor": 5868957,
+"currency": "USD",
+"invoiceNumber": "INV-2024-944213",
+"vendorName": "Granite Sparrow Foods"
+},
+"rationale": "reject_duplicate is appropriate as the same commercial invoice has already been paid, as confirmed by evidence references R_BQBBOGJZEBZZNN and R_CZ3ZMTMWYNQEZ6."
+},
+"4b401d2896790f10374ffae473f32377aed6863706f921db01055c4039dd1225": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_QUNCHXTKPXP4J4",
+"R_6WWFRWTYW7QUHG"
+],
+"facts": {
+"amountMinor": 4602172,
+"currency": "USD",
+"invoiceNumber": "INV-2025-786873",
+"vendorName": "Fjordline Office Systems"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2025-786873 from Fjordline Office Systems for 4602172 minor units of USD. The decisive evidence is 'R_QUNCHXTKPXP4J4' and 'R_6WWFRWTYW7QUHG'. Analyst note: The action chosen is request_approval because the invoice from Fjordline Office Systems, INV-2025-786873, for USD 46021.72 exceeds the stated authority limit of USD 13209.97 as indicated in evidence reference R_QUNCHXTKPXP4J4. Therefore, it requires approval before payment can be processed."
+},
+"4e28badf2d6188c0e102ec2cbc3a11192d4c3d91f554d5ab02c4a7f5ff44c2d1": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_6LUSKXL269KWP8",
+"R_HF6G3DGWUCX6SY"
+],
+"facts": {
+"amountMinor": 1398139,
+"currency": "USD",
+"invoiceNumber": "INV-2024-630401",
+"vendorName": "Blue Kestrel Components"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2024-630401 from Blue Kestrel Components for 1398139 minor units of USD. The decisive evidence is 'R_6LUSKXL269KWP8' and 'R_HF6G3DGWUCX6SY'. Analyst note: request_approval is required as the total exceeds the operator's authority limit, as indicated by evidence reference R_HF6G3DGWUCX6SY."
+},
+"53308d4385b1e4b01dfac8ee4728b5afabfeb036b9ca469766389a3a75cf3614": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_AN5WH6VQKIM9GD",
+"R_ZV6ZNIW3LHKTRS"
+],
+"facts": {
+"amountMinor": 5660416,
+"currency": "EUR",
+"invoiceNumber": "INV-2026-439638",
+"vendorName": "Evergreen Process Labs"
+},
+"rationale": "request_approval because although the claim is otherwise payable, it is outside the operator's EUR 13191.49 authority as stated in evidence reference R_AN5WH6VQKIM9GD, thus requiring the financial-approval workflow rather than autonomous settlement as indicated in R_ZV6ZNIW3LHKTRS."
+},
+"533dd97d7c88ec6b0769e95251b8434593ae7a733c5c229a7b7fb8f29c45af27": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_LBXKXW35QJ9V6Y",
+"intake-and-cover-sheet.txt"
+],
+"facts": {
+"amountMinor": 46428,
+"currency": "INR",
+"invoiceNumber": "INV-2026-571564",
+"vendorName": "Lumen Orchard Media"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2026-571564 from Lumen Orchard Media for 46428 minor units of INR. The decisive evidence is 'R_LBXKXW35QJ9V6Y' and 'intake-and-cover-sheet.txt'. Analyst note: request_approval is necessary as the total exceeds the operator's authority limit, as indicated by evidence reference R_HF6G3DGWUCX6SY."
+},
+"5eec9c4cd640dac080505b0eb5df6c4ede761e63b14d90bf9277d79ff3751969": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_RGYVXTAKY8E9Y8",
+"R_NCQJASP4S7SZSB"
+],
+"facts": {
+"amountMinor": 43893,
+"currency": "INR",
+"invoiceNumber": "INV-2026-156223",
+"vendorName": "Keystone Thermal"
+},
+"rationale": "request_approval is necessary because the invoice amount of INR 43893.47 exceeds the operator's authority limit of INR 14745.94 as stated in the document [R_NCQJASP4S7SZSB]. Although the records form a clean three-way match [R_RGYVXTAKY8E9Y8], the need for financial approval is clear and overrides any previous training examples that do not apply to this case."
+},
+"60eea2161f0cd0dce4664fbb971c645b6a0bd94b36bea22d2894bc1774f5a8ab": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_EZZIA6TYACOGNY",
+"R_YGXRRC2O2VD3BW"
+],
+"facts": {
+"amountMinor": 596305,
+"currency": "INR",
+"invoiceNumber": "INV-2026-100500",
+"vendorName": "Blue Kestrel Components"
+},
+"rationale": "Action hold_invoice was chosen for invoice INV-2026-100500 from Blue Kestrel Components for 596305 minor units of INR. The decisive evidence is 'R_EZZIA6TYACOGNY' and 'R_YGXRRC2O2VD3BW'. Analyst note: hold_invoice is chosen because there is an outstanding requested destination-account change that has not been confirmed or rejected, as stated in the ledger-and-correspondence document [R_EZZIA6TYACOGNY]. This verification must complete before payment can be released."
+},
+"60f60ddf0066aefca5cbcde269ce80007dafd0d6632c90c11ea66f5f1aa661f7": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"intake-and-cover-sheet.txt",
+"Case-file"
+],
+"facts": {
+"amountMinor": 4047203,
+"currency": "EUR",
+"invoiceNumber": "INV-2025-169626",
+"vendorName": "Juniper Vale Consulting"
+},
+"rationale": "Action hold_invoice was chosen for invoice INV-2025-169626 from Juniper Vale Consulting for 4047203 minor units of EUR. The decisive evidence is 'intake-and-cover-sheet.txt' and 'Case-file'. Analyst note: hold_invoice is warranted due to the requested destination-account change that has not been confirmed or rejected, as indicated in evidence reference R_VH96KTOTCVDYND, which forbids remittance against changed instructions until the callback closes successfully."
+},
+"673da134c720e0f817865fb6f9faaf43ff558adf23e75b56fbbdfabc59c0c73f": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_U7RQTYMYWVFQLJ",
+"R_G3C32PRIPPYVFK"
+],
+"facts": {
+"amountMinor": 2387111,
+"currency": "USD",
+"invoiceNumber": "INV-2024-961346",
+"vendorName": "Lumen Orchard Media"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2024-961346 from Lumen Orchard Media for 2387111 minor units of USD. The decisive evidence is 'R_U7RQTYMYWVFQLJ' and 'R_G3C32PRIPPYVFK'. Analyst note: request_approval is necessary because the total amount of USD 23871.11 exceeds the delegated authority limit of USD 7807.95, as indicated in the ledger [R_U7RQTYMYWVFQLJ]. The training example regarding 'hold invoice' does not apply to this case."
+},
+"6af45dd3396326ceede9b1b6e6755b8bb42a7ce8d07027969442e35a402c8437": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_FTXEYV5PYUUEGK",
+"R_VJZFL3BPFP3YCY"
+],
+"facts": {
+"amountMinor": 4077045,
+"currency": "EUR",
+"invoiceNumber": "INV-2025-119892",
+"vendorName": "Cedar Arc Logistics"
+},
+"rationale": "Action hold_invoice was chosen for invoice INV-2025-119892 from Cedar Arc Logistics for 4077045 minor units of EUR. The decisive evidence is 'R_FTXEYV5PYUUEGK' and 'R_VJZFL3BPFP3YCY'. Analyst note: hold_invoice is warranted due to an unresolved issue regarding a requested destination-account change. Treasury forbids remittance against changed instructions until the callback closes successfully, as stated in the ledger-and-correspondence.txt document."
+},
+"6d4437826a03fed4355d8c53210a3a9548aa7fddf5cb0d76542d405e38dff43c": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_ZMEJ9SWKL4YR8E",
+"R_GDKNNFAMX9KJBF"
+],
+"facts": {
+"amountMinor": 2746351,
+"currency": "USD",
+"invoiceNumber": "INV-2024-163719",
+"vendorName": "Fjordline Office Systems"
+},
+"rationale": "reject_duplicate is selected because a completed payment has already been made for the same commercial key as indicated in evidence reference R_ZMEJ9SWKL4YR8E, and the duplicate-control policy requires rejection when the underlying invoice has already been paid as per R_GDKNNFAMX9KJBF."
+},
+"73802fd8296bfc359a609610691c0397f0110ef0eed0d68472f8cc4968ee3222": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_77CQNUGWWOX3NC",
+"R_LWBGF7U3DICVNQ"
+],
+"facts": {
+"amountMinor": 3623676,
+"currency": "EUR",
+"invoiceNumber": "INV-2025-823904",
+"vendorName": "Aster Field Services"
+},
+"rationale": "hold_invoice is appropriate because the payment for the invoice from Aster Field Services with number INV-2025-823904 for EUR 36236.76 is pending verification of a requested destination-account change, as indicated by evidence R_77CQNUGWWOX3NC and R_LWBGF7U3DICVNQ."
+},
+"7658ae963d844c9199ed8019d1d046656a7c25b226577053294f66a1136daa6a": {
+"action": "open_exception",
+"evidenceRefs": [
+"R_3MTYXA56TZSSHM",
+"R_AV2VRBHFAYB9P3"
+],
+"facts": {
+"amountMinor": 2059033,
+"currency": "EUR",
+"invoiceNumber": "INV-2025-127354",
+"vendorName": "Indigo Circuit Supply"
+},
+"rationale": "Action open_exception was chosen for invoice INV-2025-127354 from Indigo Circuit Supply for 2059033 minor units of EUR. The decisive evidence is 'R_3MTYXA56TZSSHM' and 'R_AV2VRBHFAYB9P3'. Analyst note: open_exception is chosen because the signed invoice's line extension conflicts with the receiving valuation beyond tolerance, as stated in the ledger-and-correspondence.txt document. This unresolved contractual or valuation contradiction requires an exception workflow, as indicated by policy [R_2CAFBZWXDT5EVQ]."
+},
+"7a50e945b57cd1a903dc24d878e0bf1a4e803ed6c8f0ea875e8eac057cc23ead": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_AZ8X4DQNXNG9SU",
+"R_PSADGQUZBKPYLP"
+],
+"facts": {
+"amountMinor": 3676856,
+"currency": "USD",
+"invoiceNumber": "INV-2025-193714",
+"vendorName": "Lumen Orchard Media"
+},
+"rationale": "Action hold_invoice was chosen for invoice INV-2025-193714 from Lumen Orchard Media for 3676856 minor units of USD. The decisive evidence is 'R_AZ8X4DQNXNG9SU' and 'R_PSADGQUZBKPYLP'. Analyst note: hold_invoice is necessary because the independent callback to the vendor's previously registered number is still incomplete, which freezes payment-detail changes until that known-channel check succeeds as stated in evidence reference R_PSADGQUZBKPYLP."
+},
+"7ab4d9bfd5f2fac8f5d2e9c7fc08e0ecf00b7ce0bed62390466d9d9223375cc3": {
+"action": "open_exception",
+"evidenceRefs": [
+"R_CAVJIHHFML7ZSG",
+"R_TKIMSPXGICAUPK"
+],
+"facts": {
+"amountMinor": 1077240,
+"currency": "INR",
+"invoiceNumber": "INV-2024-845518",
+"vendorName": "Indigo Circuit Supply"
+},
+"rationale": "Action open_exception was chosen for invoice INV-2024-845518 from Indigo Circuit Supply for 1077240 minor units of INR. The decisive evidence is 'R_CAVJIHHFML7ZSG' and 'R_TKIMSPXGICAUPK'. Analyst note: open_exception is chosen because the signed invoice's line extension conflicts with the receiving valuation beyond tolerance, as stated in the ledger-and-correspondence.txt document. This unresolved contractual or valuation contradiction requires an exception workflow, as indicated by policy [R_TKIMSPXGICAUPK]."
+},
+"7ec0fea2a71797181e73ea26272aa58695afb21b26988417044ba14bb3d01af9": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_HEVX27PKSKRUGZ",
+"R_TFJRARZLRAH2GB"
+],
+"facts": {
+"amountMinor": 2330804,
+"currency": "USD",
+"invoiceNumber": "INV-2024-783288",
+"vendorName": "Blue Kestrel Components"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2024-783288 from Blue Kestrel Components for 2330804 minor units of USD. The decisive evidence is 'R_HEVX27PKSKRUGZ' and 'R_TFJRARZLRAH2GB'. Analyst note: request_approval is selected because the claim is otherwise payable, but it exceeds the operator's authority limit of USD 15671.86, as noted in the ledger-and-correspondence.txt document. Therefore, it requires the financial-approval workflow rather than autonomous settlement."
+},
+"83692f1bab57ee8cd2c3d2fc971ead86ca1435449515874e4a8c1ac3feff8563": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_4DDFBQ9XE2NPSP",
+"R_QCBVRGBMAPTEEO"
+],
+"facts": {
+"amountMinor": 3310166,
+"currency": "USD",
+"invoiceNumber": "INV-2026-576061",
+"vendorName": "Keystone Thermal"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2026-576061 from Keystone Thermal for 3310166 minor units of USD. The decisive evidence is 'R_4DDFBQ9XE2NPSP' and 'R_QCBVRGBMAPTEEO'. Analyst note: request_approval is necessary because while there are no discrepancies, the total exceeds the delegation schedule limit of USD 5694.56, which requires approval from a named approver as indicated in the ledger-and-correspondence.txt document."
+},
+"83cec019694b00e6333b9e200c9f95a964954c3ccbd21312869b15c61c893829": {
+"action": "open_exception",
+"evidenceRefs": [
+"R_ND8VXGJCKR36N5",
+"R_EBXSCMI2P2EKJ3"
+],
+"facts": {
+"amountMinor": 4214038,
+"currency": "INR",
+"invoiceNumber": "INV-2025-201595",
+"vendorName": "Evergreen Process Labs"
+},
+"rationale": "open_exception is warranted due to contradictory signed records that cannot be reconciled, as indicated by evidence references R_ND8VXGJCKR36N5 and R_EBXSCMI2P2EKJ3."
+},
+"89ddafdc927f99de598c59575d7979dfc6ea1a7d51ef1d0b7a9926f03a57be92": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_WHLDPRVP39JN5K",
+"R_6XNGVF4GHBAAKS"
+],
+"facts": {
+"amountMinor": 67022,
+"currency": "INR",
+"invoiceNumber": "INV-2025-473049",
+"vendorName": "Evergreen Process Labs"
+},
+"rationale": "reject_duplicate is selected because the invoice from Evergreen Process Labs with number INV-2025-473049 for INR 67022.24 has already been paid, as indicated by evidence R_WHLDPRVP39JN5K and R_6XNGVF4GHBAAKS."
+},
+"8af70a5d98bce43f508ace43fa289dcb376905a7ac0449755159d800c227de97": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_VSOE79NZXW82DJ",
+"R_WQKWXT7UHAL69A"
+],
+"facts": {
+"amountMinor": 11087,
+"currency": "INR",
+"invoiceNumber": "INV-2024-124356",
+"vendorName": "Aster Field Services"
+},
+"rationale": "settle_invoice is chosen as the claim is valid, fully reconciled, and within the delegated payment authority, as confirmed by evidence references R_VSOE79NZXW82DJ and R_WQKWXT7UHAL69A."
+},
+"8dd8f12183b504d1b066dffbc693cc3b04a842a49ad42b37a734a02929a422d4": {
+"action": "open_exception",
+"evidenceRefs": [
+"R_H4AGPRTTMJBV5U",
+"R_DCB5GUA32TZKQR"
+],
+"facts": {
+"amountMinor": 52124,
+"currency": "INR",
+"invoiceNumber": "INV-2024-201398",
+"vendorName": "Aster Field Services"
+},
+"rationale": "open_exception is warranted due to contradictory signed records that cannot be reconciled, as indicated by evidence references R_H4AGPRTTMJBV5U and R_DCB5GUA32TZKQR."
+},
+"8f36dbc2086db6d265a06ed240a6a12b39d508fca92db9de9a6c18680ed79d1f": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_YESB9INOAN3DFN",
+"R_PY86QTP9PGYHKK"
+],
+"facts": {
+"amountMinor": 1990032,
+"currency": "USD",
+"invoiceNumber": "INV-2025-972622",
+"vendorName": "Aster Field Services"
+},
+"rationale": "hold_invoice is chosen because verification through the supplier's pre-existing contact channel has not completed, as stated in evidence reference R_YESB9INOAN3DFN. The payment-change control pauses release while that out-of-band check is pending, as noted in R_PY86QTP9PGYHKK. There are no negations or stale examples that would suggest this condition is not live."
+},
+"9a9d46a027dcd172498aaa549338add2d1290c6f2ac7615c2c19586d24352a70": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_EGQJGZNO58UIW7",
+"R_U5BYMGN3AVWZYC"
+],
+"facts": {
+"amountMinor": 1145911,
+"currency": "INR",
+"invoiceNumber": "INV-2025-145564",
+"vendorName": "Keystone Thermal"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2025-145564 from Keystone Thermal for 1145911 minor units of INR. The decisive evidence is 'R_EGQJGZNO58UIW7' and 'R_U5BYMGN3AVWZYC'. Analyst note: request_approval is required as the payable total of INR 11459.11 exceeds the autonomous delegation ceiling of INR 6853.03, which requires a named financial approver before release as stated in evidence reference R_U5BYMGN3AVWZYC."
+},
+"9b098306632fb96a60ea9c7b414086d144948448d1cc955871fa7e1dd610878b": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_KOGICNJAEPH4FY",
+"R_CSNG6IKA3U8YRV"
+],
+"facts": {
+"amountMinor": 1254014,
+"currency": "EUR",
+"invoiceNumber": "INV-2025-758001",
+"vendorName": "Delta Loom Works"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2025-758001 from Delta Loom Works for 1254014 minor units of EUR. The decisive evidence is 'R_KOGICNJAEPH4FY' and 'R_CSNG6IKA3U8YRV'. Analyst note: request_approval is necessary as the claim is outside the operator's EUR 4939.47 authority, as stated in the ledger-and-correspondence document [R_KOGICNJAEPH4FY]. Financial approval is required before release."
+},
+"9b5294e6cf4b389e1fecde405c79c789879769a6eb5d8c45f332335ca88bd29f": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_6Q5ULEZ9V84BGV",
+"R_LKUR5RMX3E4DHR"
+],
+"facts": {
+"amountMinor": 1067862,
+"currency": "INR",
+"invoiceNumber": "INV-2026-955343",
+"vendorName": "Indigo Circuit Supply"
+},
+"rationale": "Action settle_invoice was chosen for invoice INV-2026-955343 from Indigo Circuit Supply for 1067862 minor units of INR. The decisive evidence is 'R_6Q5ULEZ9V84BGV' and 'R_LKUR5RMX3E4DHR'. Analyst note: settle_invoice is appropriate as the signed purchase order and invoice line totals agree within the stated rounding tolerance, and receiving recorded the full quantity after inspection. The payment ledger has no earlier posting for this supplier, invoice identifier, and total, confirming that this claim is valid and fully reconciled."
+},
+"9b988102b9125b310ccce986d801b6accd34b6acd03b514fb3822e63213079e3": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_XNNEW49TUPWGBT",
+"R_VNFOR7RQWRXKLS"
+],
+"facts": {
+"amountMinor": 3795564,
+"currency": "USD",
+"invoiceNumber": "INV-2025-727367",
+"vendorName": "Juniper Vale Consulting"
+},
+"rationale": "Action settle_invoice was chosen for invoice INV-2025-727367 from Juniper Vale Consulting for 3795564 minor units of USD. The decisive evidence is 'R_XNNEW49TUPWGBT' and 'R_VNFOR7RQWRXKLS'. Analyst note: settle_invoice is appropriate as the signed purchase order and invoice line totals agree within the stated rounding tolerance, and receiving recorded the full quantity after inspection. The payment ledger has no earlier posting for this supplier, invoice identifier, and total, confirming that this claim is valid and fully reconciled."
+},
+"9caafc206c1ecdc9b9946b87f47aff61631534c9ff7ca550bcedaa1f4ed4063d": {
+"action": "open_exception",
+"evidenceRefs": [
+"R_PLSCRBQF8EJ6P9",
+"R_N47NMFKRLFQMUU"
+],
+"facts": {
+"amountMinor": 160434,
+"currency": "EUR",
+"invoiceNumber": "INV-2025-519195",
+"vendorName": "Evergreen Process Labs"
+},
+"rationale": "Action open_exception was chosen for invoice INV-2025-519195 from Evergreen Process Labs for 160434 minor units of EUR. The decisive evidence is 'R_PLSCRBQF8EJ6P9' and 'R_N47NMFKRLFQMUU'. Analyst note: open_exception is warranted due to material unresolved record conflicts between the buyer and supplier regarding contract interpretations, as stated in evidence reference R_N47NMFKRLFQMUU, which necessitates an exception workflow."
+},
+"9ec548bb37e22e5820bd187d31ecad9e027c97a05780322dd79927d32f5531ab": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_POKPHGNIDDJMQF",
+"R_OMGUEKQYE29GWV"
+],
+"facts": {
+"amountMinor": 3018746,
+"currency": "EUR",
+"invoiceNumber": "INV-2026-276151",
+"vendorName": "Fjordline Office Systems"
+},
+"rationale": "hold_invoice is necessary as payment must pause until the known-number callback confirms the requested destination-account change, as indicated by evidence references R_POKPHGNIDDJMQF and R_OMGUEKQYE29GWV."
+},
+"9ed6c3b9477e109e6708fc82782b4f321eb8b6c41777c80a8d746bd90a01923c": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"Invoice INV-5501",
+"PO-31"
+],
+"facts": {
+"amountMinor": 450000,
+"currency": "INR",
+"invoiceNumber": "INV-5501",
+"vendorName": "Nimbus Supplies"
+},
+"rationale": "Action settle_invoice was chosen for invoice INV-5501 from Nimbus Supplies for 450000 minor units of INR. The decisive evidence is 'Invoice INV-5501' and 'PO-31'. Analyst note: The action is settle_invoice as the invoice INV-5501 from Nimbus Supplies for INR 4500.00 is fully reconciled to PO-31, approved by finance, and is within the autonomous authority limit."
+},
+"a0a131e0ac730b23c4fd891cfe6ad8388318f3aff0a931eadd4da14f435b8b6d": {
+"action": "open_exception",
+"evidenceRefs": [
+"R_PEKJBFN2A563HU",
+"R_GBHN4JE7MCSWCZ"
+],
+"facts": {
+"amountMinor": 6876677,
+"currency": "EUR",
+"invoiceNumber": "INV-2025-191611",
+"vendorName": "Cedar Arc Logistics"
+},
+"rationale": "Action open_exception was chosen for invoice INV-2025-191611 from Cedar Arc Logistics for 6876677 minor units of EUR. The decisive evidence is 'R_PEKJBFN2A563HU' and 'R_GBHN4JE7MCSWCZ'. Analyst note: open_exception is required because the claimed EUR total remains outside the permitted reconciliation tolerance, and neither side's explanation resolves the contradictory signed records, as stated in the ledger-and-correspondence document [R_GBHN4JE7MCSWCZ]. This situation necessitates an exception case."
+},
+"a63cd5a9f8268b0c8e2ab3ab6da65d95c9bf56f74e6631a125e506540d9c425e": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_CAEGPYXJUEDSNT",
+"R_TDKHUKFMIKZTPC"
+],
+"facts": {
+"amountMinor": 2173855,
+"currency": "USD",
+"invoiceNumber": "INV-2024-948312",
+"vendorName": "Lumen Orchard Media"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2024-948312 from Lumen Orchard Media for 2173855 minor units of USD. The decisive evidence is 'R_CAEGPYXJUEDSNT' and 'R_TDKHUKFMIKZTPC'. Analyst note: request_approval is required because the stated total of USD 21738.55 exceeds the autonomous delegation ceiling, which necessitates a named approver for larger reconciled payments as indicated in evidence reference R_TDKHUKFMIKZTPC."
+},
+"ac25e63a8af5eabb956b0f2bbe50265a34238f157200d1cf1a148c0ebe29f5dd": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_EHVGNZUJDBINZ7",
+"R_XBHNBUHRZZGQPH"
+],
+"facts": {
+"amountMinor": 8058824,
+"currency": "EUR",
+"invoiceNumber": "INV-2026-584904",
+"vendorName": "Blue Kestrel Components"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2026-584904 from Blue Kestrel Components for 8058824 minor units of EUR. The decisive evidence is 'R_EHVGNZUJDBINZ7' and 'R_XBHNBUHRZZGQPH'. Analyst note: request_approval is chosen because the payable total of EUR 80588.24 exceeds the queue's autonomous delegation ceiling of EUR 16835.75, necessitating a named financial approver as per evidence reference R_XBHNBUHRZZGQPH."
+},
+"b138bdd47bf0d0331954d4c454e6dbf5d25ced2434c3c8f59dc1abc4b77a1edc": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_BSJRSJ9JPNYMQM",
+"R_SUHYGVBUAH8O4C"
+],
+"facts": {
+"amountMinor": 2693281,
+"currency": "EUR",
+"invoiceNumber": "INV-2026-159908",
+"vendorName": "Blue Kestrel Components"
+},
+"rationale": "hold_invoice is selected as the payment for the invoice from Blue Kestrel Components with number INV-2026-159908 for EUR 26932.81 must pause until verification through the supplier's pre-existing contact channel is completed, as shown in evidence R_BSJRSJ9JPNYMQM and R_SUHYGVBUAH8O4C."
+},
+"b28b1e33a79b83605a5688545740b6613a6ce41ccb19d60f3a9cad6033340b69": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_AJWNZBWVBZCLIU",
+"R_5FRKH4KHFS4FTL"
+],
+"facts": {
+"amountMinor": 54851,
+"currency": "INR",
+"invoiceNumber": "INV-2024-543018",
+"vendorName": "Evergreen Process Labs"
+},
+"rationale": "settle_invoice is chosen as the claim is valid, fully reconciled, and within the delegated payment authority, as confirmed by evidence references R_AJWNZBWVBZCLIU and R_5FRKH4KHFS4FTL."
+},
+"b3ec12256dbd635c048f75725c1bbc5c687300136f6845514089962694e0905d": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_K538JEAGHRM4BY",
+"R_QVSXP4VVRSEBAM"
+],
+"facts": {
+"amountMinor": 2581926,
+"currency": "INR",
+"invoiceNumber": "INV-2024-427364",
+"vendorName": "Granite Sparrow Foods"
+},
+"rationale": "Action settle_invoice was chosen for invoice INV-2024-427364 from Granite Sparrow Foods for 2581926 minor units of INR. The decisive evidence is 'R_K538JEAGHRM4BY' and 'R_QVSXP4VVRSEBAM'. Analyst note: settle_invoice is appropriate as recalculation against the controlling purchase order produces the same payable total, and the accepted-goods record covers every billed unit, as noted in the ledger-and-correspondence document [R_QVSXP4VVRSEBAM]."
+},
+"b76f4717ddb39ee75a93a1cf2ae24fa114f60470cc90494378989897b357f3b1": {
+"action": "open_exception",
+"evidenceRefs": [
+"R_LMR8U3RAFTNAKW",
+"R_QGSNEMVRQCQ7RL"
+],
+"facts": {
+"amountMinor": 3688098,
+"currency": "USD",
+"invoiceNumber": "INV-2025-523950",
+"vendorName": "Juniper Vale Consulting"
+},
+"rationale": "Action open_exception was chosen for invoice INV-2025-523950 from Juniper Vale Consulting for 3688098 minor units of USD. The decisive evidence is 'R_LMR8U3RAFTNAKW' and 'R_QGSNEMVRQCQ7RL'. Analyst note: open_exception is warranted due to unresolved contradictions in the signed records, as the claimed USD total remains outside the permitted reconciliation tolerance. This situation requires a documented exception case as per policy [R_LQU7D7QQKDQG7E]."
+},
+"b818d178e7cf85013c8851eb0fdc1561669d773609c6792b6a4071d3013ac9c4": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_E5RJWGPE5FXWNO",
+"R_TTZUXQFONKV2QG"
+],
+"facts": {
+"amountMinor": 5416410,
+"currency": "INR",
+"invoiceNumber": "INV-2025-297363",
+"vendorName": "Fjordline Office Systems"
+},
+"rationale": "Action reject_duplicate was chosen for invoice INV-2025-297363 from Fjordline Office Systems for 5416410 minor units of INR. The decisive evidence is 'R_E5RJWGPE5FXWNO' and 'R_TTZUXQFONKV2QG'. Analyst note: reject_duplicate is appropriate as this package is linked to an earlier settled entry with matching supplier, invoice, currency, and amount. The second intake is identified as another scan of the same instrument, not a revised invoice, which violates the duplicate-control policy [R_WSB2KR8O8V3WED]."
+},
+"bc21b7c8e3f728c10ce92baed3ae6b5a29b741241e93c8e465e2efeaa07e3426": {
+"action": "open_exception",
+"evidenceRefs": [
+"R_RWBKPXETMLZWJJ",
+"R_KX5QEPE5LAXYYE"
+],
+"facts": {
+"amountMinor": 6082233,
+"currency": "USD",
+"invoiceNumber": "INV-2024-855260",
+"vendorName": "Granite Sparrow Foods"
+},
+"rationale": "Action open_exception was chosen for invoice INV-2024-855260 from Granite Sparrow Foods for 6082233 minor units of USD. The decisive evidence is 'R_RWBKPXETMLZWJJ' and 'R_KX5QEPE5LAXYYE'. Analyst note: open_exception is required due to mutually incompatible contract interpretations asserted by both the buyer and supplier, as noted in the ledger-and-correspondence document [R_KX5QEPE5LAXYYE]. This material conflict necessitates an exception workflow."
+},
+"c8322b5f774c20f4187cc245ebdf8c90c51f86b560d3d09844650e63dc1b829a": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_8DFOCWNB56BMCH",
+"R_URSWSTXBBJKHDJ"
+],
+"facts": {
+"amountMinor": 2294,
+"currency": "INR",
+"invoiceNumber": "INV-2026-104356",
+"vendorName": "Blue Kestrel Components"
+},
+"rationale": "settle_invoice is appropriate as the claim is valid, fully reconciled, and within the delegated payment authority, supported by evidence references R_8DFOCWNB56BMCH and R_URSWSTXBBJKHDJ."
+},
+"ca8fc0110292386a2afd6d8936cfedd2acd083562f87eb8fc51664e39e26bb6d": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_6WFT3UEO5XMI5Y",
+"R_JHKRPV6JMVLUTE"
+],
+"facts": {
+"amountMinor": 8041217,
+"currency": "INR",
+"invoiceNumber": "INV-2025-215037",
+"vendorName": "Evergreen Process Labs"
+},
+"rationale": "request_approval is required as the invoice from Evergreen Process Labs with number INV-2025-215037 for INR 80412.17 exceeds the autonomous delegation ceiling, as indicated by evidence R_6WFT3UEO5XMI5Y and R_JHKRPV6JMVLUTE."
+},
+"cd9cba6264e5af300c04d0de16deccff2b0989c94a52a538f2112c321adebfd4": {
+"action": "open_exception",
+"evidenceRefs": [
+"R_SQZDHKKUZRKYMA",
+"R_Q58DSNBUVPXPNR"
+],
+"facts": {
+"amountMinor": 5546061,
+"currency": "USD",
+"invoiceNumber": "INV-2024-418089",
+"vendorName": "Cedar Arc Logistics"
+},
+"rationale": "open_exception is warranted as the invoice from Cedar Arc Logistics with number INV-2024-418089 for USD 55460.61 has conflicting records that cannot be reconciled, as shown in evidence R_SQZDHKKUZRKYMA and R_Q58DSNBUVPXPNR."
+},
+"cdc0b891f7d1549dedfa406ecb9385e8b433eb76ff0e0850c1c8e0358bb2fd79": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_5MNM9GSJDSC9Q5",
+"R_N7PXWTAJKSLS43"
+],
+"facts": {
+"amountMinor": 5518966,
+"currency": "USD",
+"invoiceNumber": "INV-2024-652185",
+"vendorName": "Evergreen Process Labs"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2024-652185 from Evergreen Process Labs for 5518966 minor units of USD. The decisive evidence is 'R_5MNM9GSJDSC9Q5' and 'R_N7PXWTAJKSLS43'. Analyst note: request_approval is necessary as the payable total exceeds the autonomous delegation ceiling of USD 7106.48, as stated in the ledger-and-correspondence document [R_5MNM9GSJDSC9Q5]. Approval from a named financial approver is required before release."
+},
+"d7cd08f9a4b57626026dec0dc9e1ed9633ef7860e2610682efb0fedde2fda5ad": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_N3BTS8GUJITHRR",
+"R_2RPSR7SJT2SUWR"
+],
+"facts": {
+"amountMinor": 5720801,
+"currency": "EUR",
+"invoiceNumber": "INV-2025-716503",
+"vendorName": "Harbor Nine Medical"
+},
+"rationale": "Action hold_invoice was chosen for invoice INV-2025-716503 from Harbor Nine Medical for 5720801 minor units of EUR. The decisive evidence is 'R_N3BTS8GUJITHRR' and 'R_2RPSR7SJT2SUWR'. Analyst note: hold_invoice is chosen because the payment is blocked until the independent callback to the vendor's previously registered number is completed, as stated in the correspondence [R_2RPSR7SJT2SUWR]. The training example mentioning 'hold invoice' is not applicable as it does not provide instructions for this case."
+},
+"d8c439873e4e63221d348c209fd89af332251d8aa9b0abd4e035ee478b63792a": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_8FDGAUOX8SMARW",
+"R_CXBNP7GR37KMAX"
+],
+"facts": {
+"amountMinor": 6260112,
+"currency": "USD",
+"invoiceNumber": "INV-2024-630332",
+"vendorName": "Fjordline Office Systems"
+},
+"rationale": "Action settle_invoice was chosen for invoice INV-2024-630332 from Fjordline Office Systems for 6260112 minor units of USD. The decisive evidence is 'R_8FDGAUOX8SMARW' and 'R_CXBNP7GR37KMAX'. Analyst note: settle_invoice is appropriate as the signed purchase order and invoice line totals agree within the stated rounding tolerance, and there is no earlier posting for this supplier, invoice identifier, and total, as confirmed in the ledger-and-correspondence document [R_CXBNP7GR37KMAX]."
+},
+"d9646dc78647202254a42f919f3fd1e0c0c504006f0fd606300077fce1e1e804": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_VUFE2SQYYXMQMT",
+"R_TW8B6ZNR5FVIHY"
+],
+"facts": {
+"amountMinor": 7375785,
+"currency": "INR",
+"invoiceNumber": "INV-2025-887215",
+"vendorName": "Cedar Arc Logistics"
+},
+"rationale": "hold_invoice is chosen because the payment for the invoice from Cedar Arc Logistics with number INV-2025-887215 for INR 73757.85 is on hold pending verification through the supplier's pre-existing contact channel, as indicated by evidence R_VUFE2SQYYXMQMT and R_TW8B6ZNR5FVIHY."
+},
+"dbcacc2d6540b08aae1bfef1aef068ed79a7d6e07e99b356d7b76a0219e20a93": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_ZKSS6YC7X32AZC",
+"R_83PHN2MR4QM6QB"
+],
+"facts": {
+"amountMinor": 7515143,
+"currency": "INR",
+"invoiceNumber": "INV-2026-887121",
+"vendorName": "Indigo Circuit Supply"
+},
+"rationale": "Action request_approval was chosen for invoice INV-2026-887121 from Indigo Circuit Supply for 7515143 minor units of INR. The decisive evidence is 'R_ZKSS6YC7X32AZC' and 'R_83PHN2MR4QM6QB'. Analyst note: request_approval is selected because the payable total exceeds the autonomous delegation ceiling of INR 4263.76, as indicated in the ledger-and-correspondence document [R_ZKSS6YC7X32AZC]. Approval from a named financial approver is required before release."
+},
+"dc23c0da70f41e9959682d1514b52b224db55c5a436e879026752bfc721ac1b8": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_HJLDALTFKZ4VMR",
+"R_72P7J9DCPYCQU9"
+],
+"facts": {
+"amountMinor": 6165196,
+"currency": "USD",
+"invoiceNumber": "INV-2025-839111",
+"vendorName": "Juniper Vale Consulting"
+},
+"rationale": "reject_duplicate because the paid-items ledger contains an earlier posting for the same supplier, normalized invoice identifier, currency, and total, indicating that this invoice has already been settled as per evidence reference R_HJLDALTFKZ4VMR and the policy directs an exact commercial duplicate to rejection, not a second settlement as stated in R_72P7J9DCPYCQU9."
+},
+"e16f854a93f5faa16ad586adfdcf1293aada04e9c6bf6b11f725503bd8415a0f": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_HLLCAHVN3BSMEB",
+"R_TSCIZF8RKWCVWG"
+],
+"facts": {
+"amountMinor": 704926,
+"currency": "EUR",
+"invoiceNumber": "INV-2025-460745",
+"vendorName": "Indigo Circuit Supply"
+},
+"rationale": "Action hold_invoice was chosen for invoice INV-2025-460745 from Indigo Circuit Supply for 704926 minor units of EUR. The decisive evidence is 'R_HLLCAHVN3BSMEB' and 'R_TSCIZF8RKWCVWG'. Analyst note: hold_invoice is warranted due to the independent callback to the vendor's previously registered number being incomplete, which freezes payment-detail changes until that known-channel check succeeds as stated in evidence reference R_TSCIZF8RKWCVWG."
+},
+"e29550a6a40d4419499f4fd4f834d83fdc7860982a8ba06620a9b0c636b90b50": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_ZRSAC72ZCDVJST",
+"R_9H6COC6FEMRQKI"
+],
+"facts": {
+"amountMinor": 258590,
+"currency": "EUR",
+"invoiceNumber": "INV-2024-148606",
+"vendorName": "Delta Loom Works"
+},
+"rationale": "reject_duplicate is appropriate as the same commercial invoice has already been paid, as confirmed by evidence references R_ZRSAC72ZCDVJST and R_9H6COC6FEMRQKI."
+},
+"eb99ca8483fb19731ec8c0df4352d1ade6d4749c5d10ab9b07d6de12c6b38207": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_A65MJGX6AYZSCT",
+"R_TRURIEDX6RUVG8"
+],
+"facts": {
+"amountMinor": 2652285,
+"currency": "USD",
+"invoiceNumber": "INV-2025-246611",
+"vendorName": "Harbor Nine Medical"
+},
+"rationale": "Action settle_invoice was chosen for invoice INV-2025-246611 from Harbor Nine Medical for 2652285 minor units of USD. The decisive evidence is 'R_A65MJGX6AYZSCT' and 'R_TRURIEDX6RUVG8'. Analyst note: settle_invoice is appropriate as the signed purchase order and invoice line totals agree within the stated rounding tolerance, and there is no earlier posting for this supplier, invoice identifier, and total, as confirmed in the ledger-and-correspondence document [R_A65MJGX6AYZSCT]."
+},
+"ec651b29f5715147d5de38a68cfdda70cdc28973d55872dc8f6a3115177d7048": {
+"action": "request_approval",
+"evidenceRefs": [
+"R_C9GTCFCSMAZPWS",
+"R_FBSZ92HVEDCYG4"
+],
+"facts": {
+"amountMinor": 6742575,
+"currency": "EUR",
+"invoiceNumber": "INV-2025-557642",
+"vendorName": "Lumen Orchard Media"
+},
+"rationale": "request_approval is chosen because the payable total of EUR 67425.75 exceeds the autonomous delegation ceiling of EUR 4444.73 as stated in evidence reference R_C9GTCFCSMAZPWS, requiring a named financial approver before release as per R_FBSZ92HVEDCYG4."
+},
+"ee2ad7a3a2220cd30060634126eee18dc000678cb50d090dc57a81008016457f": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_UL3JEWEZ8QHXYU",
+"R_ZND9XWDDB9JC38"
+],
+"facts": {
+"amountMinor": 6380136,
+"currency": "USD",
+"invoiceNumber": "INV-2026-905159",
+"vendorName": "Granite Sparrow Foods"
+},
+"rationale": "Action reject_duplicate was chosen for invoice INV-2026-905159 from Granite Sparrow Foods for 6380136 minor units of USD. The decisive evidence is 'R_UL3JEWEZ8QHXYU' and 'R_ZND9XWDDB9JC38'. Analyst note: reject_duplicate is warranted because there is an earlier posting for the same supplier, normalized invoice identifier, currency, and total, as noted in the ledger-and-correspondence document [R_UL3JEWEZ8QHXYU]. This constitutes a duplicate invoice."
+},
+"ee5fc4f5329e78e95592d462c8c40b26c7fa71f04482ac39ceae062df1990745": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_VYQQ4BJE8FJVWC",
+"R_QUISRCDX2ZFGJE"
+],
+"facts": {
+"amountMinor": 38721,
+"currency": "INR",
+"invoiceNumber": "INV-2025-140971",
+"vendorName": "Keystone Thermal"
+},
+"rationale": "Action settle_invoice was chosen for invoice INV-2025-140971 from Keystone Thermal for 38721 minor units of INR. The decisive evidence is 'R_VYQQ4BJE8FJVWC' and 'R_QUISRCDX2ZFGJE'. Analyst note: The action chosen is settle_invoice because the invoice from Keystone Thermal has been fully reconciled with no exceptions noted, as confirmed by evidence [R_U3REJ47FRMHNWR]. Additionally, the duplicate-control query returned no prior settlement for the invoice [R_QUISRCDX2ZFGJE], indicating that it is not a duplicate. There are no outstanding conditions that would prevent settlement."
+},
+"ee7ac372479a950e2e2f72c128453ed1999b69e1a8d03955473d4be608c0e15e": {
+"action": "reject_duplicate",
+"evidenceRefs": [
+"R_DIPNEUBORQYDYJ",
+"R_2UPVLPETGSKIQ3"
+],
+"facts": {
+"amountMinor": 5492732,
+"currency": "EUR",
+"invoiceNumber": "INV-2024-187708",
+"vendorName": "Juniper Vale Consulting"
+},
+"rationale": "Action reject_duplicate was chosen for invoice INV-2024-187708 from Juniper Vale Consulting for 5492732 minor units of EUR. The decisive evidence is 'R_DIPNEUBORQYDYJ' and 'R_2UPVLPETGSKIQ3'. Analyst note: reject_duplicate is appropriate as a completed payment has the same commercial key after identifier normalization. The comparison of the signed images shows that punctuation introduced by OCR is the only variation, confirming the duplicate status [R_2UPVLPETGSKIQ3]."
+},
+"f310a1598237b75e2f3e8e6433fa06c9457ba31193bec83d63ccce88be2cf7d9": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_JR7VQUFNVDEYIU",
+"R_9VKQFAHHOUQWJ8"
+],
+"facts": {
+"amountMinor": 7223823,
+"currency": "USD",
+"invoiceNumber": "INV-2025-152680",
+"vendorName": "Keystone Thermal"
+},
+"rationale": "Action hold_invoice was chosen for invoice INV-2025-152680 from Keystone Thermal for 7223823 minor units of USD. The decisive evidence is 'R_JR7VQUFNVDEYIU' and 'R_9VKQFAHHOUQWJ8'. Analyst note: hold_invoice is appropriate because verification through the supplier's pre-existing contact channel has not completed, as indicated in the ledger-and-correspondence document [R_JR7VQUFNVDEYIU]. Payment must pause until this verification is resolved."
+},
+"f72aedbc8c581f7adb4bb989fcd630352ee6827a3fe1eff8284c33b81a0a9f40": {
+"action": "settle_invoice",
+"evidenceRefs": [
+"R_6UZFJ27GISVCHB",
+"R_TJWY4ZHAE73JHT"
+],
+"facts": {
+"amountMinor": 2669939,
+"currency": "USD",
+"invoiceNumber": "INV-2025-785938",
+"vendorName": "Fjordline Office Systems"
+},
+"rationale": "settle_invoice is chosen as the invoice from Fjordline Office Systems with number INV-2025-785938 for USD 26699.39 is fully reconciled with no outstanding issues, as confirmed by evidence R_6UZFJ27GISVCHB and R_TJWY4ZHAE73JHT."
+},
+"f73e3274e857803956fc1d44db89a5d6beea180261ad898b5346bf400a794904": {
+"action": "hold_invoice",
+"evidenceRefs": [
+"R_WC68AFVG8MQRPA",
+"R_OEWUC4UCRAYQKH"
+],
+"facts": {
+"amountMinor": 8076601,
+"currency": "INR",
+"invoiceNumber": "INV-2025-835774",
+"vendorName": "Lumen Orchard Media"
+},
+"rationale": "hold_invoice because verification through the supplier's pre-existing contact channel has not completed, which blocks payment as indicated in evidence reference R_WC68AFVG8MQRPA, and the payment-change control pauses release while that out-of-band check is pending as per R_OEWUC4UCRAYQKH."
+}
+}
