@@ -1002,6 +1002,7 @@ def finish(state, status):
 # ------------------------------------------------------------------ response
 
 def build_response(state, dispatches=None, approvals=None):
+    """The complete envelope, as the durable final result defines it."""
     diagnosis = state["diagnosis"]
     payload = {
         "runId": state["runId"],
@@ -1017,6 +1018,25 @@ def build_response(state, dispatches=None, approvals=None):
         "otlp": render_otlp(state),
     }
     return scrub(payload, state.get("forbidden") or [])
+
+
+# The five keys the question gives the waiting turn. Section 3's approval turn
+# shows the same reduced shape.
+WAITING_KEYS = ("runId", "status", "diagnosis", "dispatches", "approvals")
+
+
+def public_response(state, dispatches=None, approvals=None):
+    """What actually goes on the wire.
+
+    A run still waiting for outcomes answers with the waiting shape. Returning
+    the final envelope instead - chosenEffect, an actionLog, an empty
+    receiptLog and a whole OTLP export - describes a run that has already
+    finished, which is not what a caller about to post receipts should read.
+    """
+    payload = build_response(state, dispatches, approvals)
+    if state["status"] == "waiting":
+        return {k: payload[k] for k in WAITING_KEYS}
+    return payload
 
 
 # ------------------------------------------------------------------- routes
@@ -1104,7 +1124,7 @@ async def create_incident(request: Request):
             # nothing safe to probe: go straight to the effect (or its approval
             # gate) so the grader always observes an action attempt
             dispatches, approvals = advance(state)
-        response = build_response(state, dispatches, approvals)
+        response = public_response(state, dispatches, approvals)
         save_run(run_id, fp, state, response)  # persist before responding
         return response
 
@@ -1166,7 +1186,7 @@ async def post_receipt(run_id: str, request: Request):
 
         state.pop("currentReceiptId", None)
         state["receiptIds"].append(receipt_id)
-        response = build_response(state, dispatches, approvals_out)
+        response = public_response(state, dispatches, approvals_out)
         save_run(run_id, run["fingerprint"], state, response)
         save_receipt(run_id, receipt_id, fp, response)
         return response
@@ -1178,7 +1198,7 @@ async def get_incident(run_id: str):
     if not run:
         raise HTTPException(status_code=404, detail="unknown runId")
     state = run["state"]
-    return build_response(state, [], pending_approvals(state))
+    return public_response(state, [], pending_approvals(state))
 
 
 def pending_approvals(state):

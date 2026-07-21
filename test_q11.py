@@ -21,7 +21,7 @@ import q11_incident as q11
 
 app = FastAPI()
 app.include_router(q11.router)
-client = TestClient(app)
+_client = TestClient(app)
 
 FAILURES = []
 
@@ -152,6 +152,53 @@ REAL_CHAT_JSON = q11.llm.chat_json   # captured before the fake takes over
 q11.llm.chat_json = FAKE.chat_json
 
 
+class Fat:
+    """A response whose .json() is the full internal envelope.
+
+    The wire payload for a waiting turn is deliberately the five documented
+    keys, but nearly every assertion below is about internal state - spans,
+    actionLog, receiptLog, chosenEffect. Those are read back off the persisted
+    run, so trimming the wire shape costs no coverage here. The wire shape
+    itself is asserted directly in test_wire_shapes().
+    """
+
+    def __init__(self, resp):
+        self._resp = resp
+
+    def __getattr__(self, name):
+        return getattr(self._resp, name)
+
+    def raw(self):
+        return self._resp.json()
+
+    def json(self):
+        body = self._resp.json()
+        if not isinstance(body, dict) or "otlp" in body or "runId" not in body:
+            return body
+        stored = q11.load_run(body["runId"])
+        if not stored:
+            return body
+        full = q11.build_response(stored["state"], body.get("dispatches"),
+                                  body.get("approvals"))
+        full.update(body)
+        return full
+
+
+class _FatClient:
+    """Wraps TestClient so every response carries the full envelope."""
+
+    def __getattr__(self, name):
+        inner = getattr(_client, name)
+
+        def call(*args, **kwargs):
+            return Fat(inner(*args, **kwargs))
+
+        return call
+
+
+client = _FatClient()
+
+
 def post(run_body):
     effect = run_body.pop("_effect", "scale_service")
     FAKE.effect = effect
@@ -165,6 +212,10 @@ def receipt(run_id, payload):
 # ------------------------------------------------------------ otlp helpers
 
 def spans_of(resp):
+    # A waiting turn does not put the trace on the wire; read it off the run.
+    if "otlp" not in resp:
+        stored = q11.load_run(resp["runId"])
+        resp = dict(resp, otlp=q11.render_otlp(stored["state"]))
     return resp["otlp"]["resourceSpans"][0]["scopeSpans"][0]["spans"]
 
 
@@ -184,6 +235,10 @@ def by_name(resp, name):
 
 
 def validate_otlp(label, resp, run_id, marker):
+    stored = q11.load_run(resp["runId"]) if "actionLog" not in resp else None
+    if stored:
+        resp = dict(resp, actionLog=stored["state"]["actionLog"],
+                    receiptLog=stored["state"]["receiptLog"])
     spans = spans_of(resp)
     check("%s: spans exist" % label, len(spans) >= 4)
     trace_ids = {s["traceId"] for s in spans}
@@ -270,7 +325,16 @@ def validate_otlp(label, resp, run_id, marker):
     return spans
 
 
+def _with_otlp(resp):
+    if isinstance(resp, dict) and "otlp" not in resp and "runId" in resp:
+        stored = q11.load_run(resp["runId"])
+        if stored:
+            return dict(resp, otlp=q11.render_otlp(stored["state"]))
+    return resp
+
+
 def assert_no_leak(label, resp):
+    resp = _with_otlp(resp)
     blob = json.dumps(resp)
     for token in (SECRET_TOKEN, PRIVATE_NOTE, DO_NOT_EXPORT):
         check("%s: no leak of %r" % (label, token[:18]), token not in blob)
@@ -738,6 +802,42 @@ def test_model_failure_fallback():
         q11.llm.chat_json = FAKE.chat_json
 
 
+def test_wire_shapes():
+    """The waiting turn is exactly the five documented keys; the final result
+    is the full envelope. Asserted on the raw body, not the fattened one."""
+    print("\n[11] wire shapes")
+    run = "run-wire"
+    resp = post(body(run))
+    raw = resp.raw()
+    check("waiting body has exactly the documented keys",
+          set(raw) == {"runId", "status", "diagnosis", "dispatches", "approvals"},
+          sorted(raw))
+    check("waiting body carries no final-result fields",
+          not ({"otlp", "actionLog", "receiptLog", "chosenEffect", "suppressed"} & set(raw)),
+          sorted(raw))
+
+    data = resp.json()
+    outcomes = [{"actionId": d["actionId"], "callId": d["callId"], "attempt": 1,
+                 "status": 200, "resultClass": "diagnosis_confirmed",
+                 "nonce": "wn-%d" % i} for i, d in enumerate(data["dispatches"])]
+    mid = receipt(run, {"receiptId": "rcpt-wire-1", "outcomes": outcomes})
+    check("still-waiting receipt turn keeps the waiting shape",
+          set(mid.raw()) == {"runId", "status", "diagnosis", "dispatches", "approvals"},
+          sorted(mid.raw()))
+
+    eff = mid.json()["dispatches"][0]
+    final = receipt(run, {"receiptId": "rcpt-wire-2", "outcomes": [
+        {"actionId": eff["actionId"], "callId": eff["callId"], "attempt": 1,
+         "status": 200, "resultClass": "effect_applied", "nonce": "wn-eff"}]})
+    fraw = final.raw()
+    check("final body is the full envelope",
+          {"otlp", "actionLog", "receiptLog", "chosenEffect", "suppressed"} <= set(fraw),
+          sorted(fraw))
+    check("final status terminal", fraw["status"] in ("completed", "failed"), fraw["status"])
+    check("GET of a completed run is the full envelope",
+          {"otlp", "actionLog", "receiptLog"} <= set(client.get("/v2/incidents/%s" % run).raw()))
+
+
 def test_live_model():
     print("\n[10] live model call")
     if not q11.llm.available():
@@ -791,6 +891,7 @@ if __name__ == "__main__":
     test_redaction_hard()
     test_single_diagnostic_no_join()
     test_model_failure_fallback()
+    test_wire_shapes()
     test_live_model()
 
     print("\n" + "=" * 60)

@@ -37,17 +37,26 @@ with _lock:
     _c.execute("""CREATE TABLE IF NOT EXISTS capture(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         ts REAL, path TEXT, client TEXT, body TEXT, response TEXT)""")
+    cols = {r[1] for r in _c.execute("PRAGMA table_info(capture)")}
+    if "headers" not in cols:
+        _c.execute("ALTER TABLE capture ADD COLUMN headers TEXT")
+    if "method" not in cols:
+        _c.execute("ALTER TABLE capture ADD COLUMN method TEXT")
+    if "status" not in cols:
+        _c.execute("ALTER TABLE capture ADD COLUMN status INTEGER")
     _c.commit()
     _c.close()
 
 
-def record(path, client, body, response=None):
+def record(path, client, body, response=None, headers=None, method="POST", status=None):
     try:
         with _lock:
             c = _conn()
-            c.execute("INSERT INTO capture(ts,path,client,body,response) VALUES(?,?,?,?,?)",
+            c.execute("INSERT INTO capture(ts,path,client,body,response,headers,method,status)"
+                      " VALUES(?,?,?,?,?,?,?,?)",
                       (time.time(), path, client, body[:MAX_BODY],
-                       (response or "")[:MAX_BODY]))
+                       (response or "")[:MAX_BODY],
+                       json.dumps(headers or {})[:MAX_BODY], method, status))
             c.execute("DELETE FROM capture WHERE id NOT IN "
                       "(SELECT id FROM capture ORDER BY id DESC LIMIT 400)")
             c.commit()
@@ -58,7 +67,7 @@ def record(path, client, body, response=None):
 
 async def middleware(request: Request, call_next):
     path = request.url.path
-    if request.method != "POST" or not any(path.startswith(w) for w in WATCH):
+    if not any(path.startswith(w) for w in WATCH):
         return await call_next(request)
 
     raw = await request.body()
@@ -79,7 +88,9 @@ async def middleware(request: Request, call_next):
 
     client = request.client.host if request.client else "?"
     record(path, client, raw.decode("utf-8", "replace"),
-           payload.decode("utf-8", "replace"))
+           payload.decode("utf-8", "replace"),
+           headers=dict(request.headers), method=request.method,
+           status=response.status_code)
     return out
 
 
@@ -92,25 +103,27 @@ def _auth(key):
 async def list_capture(key: str = "", path: str = "", limit: int = 20):
     _auth(key)
     c = _conn()
-    q = "SELECT id,ts,path,client,length(body),length(response) FROM capture"
+    q = ("SELECT id,ts,path,client,length(body),length(response),method,status"
+         " FROM capture")
     args = []
     if path:
-        q += " WHERE path=?"
-        args.append(path)
+        q += " WHERE path LIKE ?"
+        args.append(path + "%")
     q += " ORDER BY id DESC LIMIT ?"
     args.append(min(limit, 200))
     rows = c.execute(q, args).fetchall()
     c.close()
     return [{"id": r[0], "ts": r[1], "path": r[2], "client": r[3],
-             "reqBytes": r[4], "respBytes": r[5]} for r in rows]
+             "reqBytes": r[4], "respBytes": r[5], "method": r[6],
+             "status": r[7]} for r in rows]
 
 
 @router.get("/debug/capture/{cid}")
 async def get_capture(cid: int, key: str = ""):
     _auth(key)
     c = _conn()
-    row = c.execute("SELECT ts,path,client,body,response FROM capture WHERE id=?",
-                    (cid,)).fetchone()
+    row = c.execute("SELECT ts,path,client,body,response,headers,method,status"
+                    " FROM capture WHERE id=?", (cid,)).fetchone()
     c.close()
     if not row:
         raise HTTPException(status_code=404, detail="not found")
@@ -120,4 +133,5 @@ async def get_capture(cid: int, key: str = ""):
         except Exception:
             return s
     return {"ts": row[0], "path": row[1], "client": row[2],
+            "method": row[6], "status": row[7], "headers": _p(row[5]),
             "request": _p(row[3]), "response": _p(row[4])}
