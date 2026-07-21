@@ -364,6 +364,11 @@ RE_ENQUIRY_RECORD = re.compile(
     r"Order (ORD-[A-Z0-9]+) is linked to (CASE-[A-Z0-9]+); "
     r"its current public status is exactly " + Q)
 RE_GATEWAY = re.compile(r"sender address recorded by the gateway is (\S+)\.")
+# "the mailbox route is customer-care, while ownership remains with fulfilment-leads"
+# The dossier's own `mailbox` header is the ROUTE. The draft rule asks for the
+# OWNING mailbox, and where the dossier separates them it is saying so on purpose.
+RE_OWNERSHIP = re.compile(
+    r"mailbox route is ([\w.\-]+), while ownership remains with ([\w.\-]+)")
 RE_COMPLETED = re.compile(
     r"(CASE-[A-Z0-9]+) records this item as "
     r"(already completed|duplicate|informational); "
@@ -422,6 +427,15 @@ def _find(lines, rx):
         m = rx.search(ln.get("text") or "")
         if m:
             return ln["lineId"], m
+    return None, None
+
+
+def _find_any(dossier, rx):
+    """First (lineId, match) anywhere in the dossier, whatever the source."""
+    for lid, text, _sid in dossier_lines(dossier):
+        m = rx.search(text)
+        if m:
+            return lid, m
     return None, None
 
 
@@ -518,10 +532,20 @@ def deterministic_decision(dossier):
     if rm and mm:
         # The authenticated record carries the order and the public status;
         # only the customer address has to come from the mail itself.
-        return {"action": "create_draft", "evidence": [rlid, mlid],
-                "fields": {"recipient": mm.group(1),
-                           "referenceId": rm.group(1),
-                           "status": rm.group(3)}}
+        # The rule says to draft in the OWNING mailbox, and where the dossier
+        # separates the two ("the mailbox route is X, while ownership remains
+        # with Y") the header field is the route, not the owner. Y is an
+        # argument like any other, so the line stating it is cited too.
+        fields = {"recipient": mm.group(1),
+                  "referenceId": rm.group(1),
+                  "status": rm.group(3)}
+        evidence = [rlid, mlid]
+        olid, om = _find_any(dossier, RE_OWNERSHIP)
+        if om:
+            fields["mailbox"] = om.group(2)
+            evidence.append(olid)
+        return {"action": "create_draft", "evidence": sorted(set(evidence)),
+                "fields": fields}
     return None
 
 
@@ -622,7 +646,9 @@ def shape_action(action, fields, dossier, did, line_ids):
         # The frozen type spells the queue id as "mailbox:<mailbox>" and pins
         # `template` to "order_status". Both are literals from the schema, not
         # facts read out of a dossier, so they are written here unconditionally.
-        return ({"kind": "draft_queue", "id": "mailbox:" + mailbox},
+        drafted = clean_scalar(fields.get("mailbox") if isinstance(fields, dict) else None,
+                               mailbox, 80)
+        return ({"kind": "draft_queue", "id": "mailbox:" + drafted},
                 {"recipient": get("recipient", mailbox),
                  "referenceId": get("referenceId", ref),
                  "status": get("status", "in_progress", 80),
