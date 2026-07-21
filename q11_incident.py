@@ -1198,7 +1198,29 @@ async def get_incident(run_id: str):
     if not run:
         raise HTTPException(status_code=404, detail="unknown runId")
     state = run["state"]
-    return public_response(state, [], pending_approvals(state))
+    return public_response(state, pending_dispatches(state),
+                           pending_approvals(state))
+
+
+def pending_dispatches(state):
+    """The calls this run is still waiting on, exactly as they were issued.
+
+    A GET has to answer with the current persisted state. Returning an empty
+    dispatch list said the run was waiting on nothing, which is both untrue and
+    the opposite of what a caller reading back a run needs in order to send
+    outcomes for it.
+    """
+    out = []
+    for action in state.get("actions") or []:
+        if action.get("state") != "pending":
+            continue
+        attempt = action.get("attempt", 1)
+        for entry in reversed(state.get("actionLog") or []):
+            if (entry.get("actionId") == action["actionId"]
+                    and entry.get("attempt") == attempt):
+                out.append(entry)
+                break
+    return out
 
 
 def pending_approvals(state):

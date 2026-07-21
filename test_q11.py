@@ -837,6 +837,27 @@ def test_wire_shapes():
     check("GET of a completed run is the full envelope",
           {"otlp", "actionLog", "receiptLog"} <= set(client.get("/v2/incidents/%s" % run).raw()))
 
+    # A GET while calls are outstanding must report them, not an empty list.
+    run2 = "run-wire-pending"
+    issued = post(body(run2)).json()["dispatches"]
+    got = client.get("/v2/incidents/%s" % run2).raw()
+    check("GET reports the pending dispatches",
+          [d["callId"] for d in got["dispatches"]] == [d["callId"] for d in issued],
+          "%s vs %s" % ([d["callId"] for d in got["dispatches"]],
+                        [d["callId"] for d in issued]))
+    check("GET dispatches are byte-identical to the issued ones",
+          got["dispatches"] == issued)
+
+    # And once they are answered, the GET stops advertising them.
+    receipt(run2, {"receiptId": "rcpt-wire-p", "outcomes": [
+        {"actionId": d["actionId"], "callId": d["callId"], "attempt": 1,
+         "status": 200, "resultClass": "diagnosis_confirmed", "nonce": "pn-%d" % i}
+        for i, d in enumerate(issued)]})
+    after = client.get("/v2/incidents/%s" % run2).raw()
+    check("GET drops answered calls and shows the effect",
+          [d["toolName"] for d in after["dispatches"]] == ["scale_service"],
+          str([d["toolName"] for d in after["dispatches"]]))
+
 
 def test_live_model():
     print("\n[10] live model call")
