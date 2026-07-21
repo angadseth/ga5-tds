@@ -454,7 +454,8 @@ def _rule_line(dossier, action):
 # cites only the signed rule line, and the other buckets keep the value-bearing
 # lines so the alternative stays measurable. Orthogonal question folded in: does
 # referenceId want the internal CASE or the public ORD.
-ROUND5_PROBE = True
+# All six archetypes are now locked; no probe is active.
+ROUND5_PROBE = False
 
 
 def _variant(dossier_id, buckets=2):
@@ -671,34 +672,14 @@ def deterministic_decision(dossier):
                   "status": rm.group(3)}
         plid = _rule_line(dossier, "create_draft")
         evidence = [plid, rlid, mlid] if plid else [rlid, mlid]
-        if ROUND5_PROBE and plid:
-            # Everything the structural analogy predicts has now been rejected:
-            # [rule, record, gateway] and [rule, record, gateway, enquiry] under
-            # both the route and the owning mailbox, with and without the
-            # record's disclosure line, the audit line, and the CASE. The
-            # emitted values are all verbatim and the line vocabulary of these
-            # dossiers is fully enumerated - five operative sentences, the rest
-            # decoys. Since acceptance is exact, one accepted dossier settles
-            # it, so the remaining cells are swept one per bucket.
-            elid, _em = _find(mlines, re.compile(re.escape(ENQUIRY_CLAUSE)))
-            r2lid = next((ln["lineId"] for ln in rlines
-                          if "not approved for customer disclosure"
-                          in (ln.get("text") or "")), None)
-            olid, om = _find_any(dossier, RE_OWNERSHIP)
-            owner = om.group(2) if om else None
-            case_id = rm.group(2)
-            v = _variant(dossier.get("dossierId") or "", 6)
-            evidence = [[plid, rlid, mlid],
-                        [plid, rlid, mlid],
-                        [plid, rlid, elid],
-                        [plid, elid, mlid],
-                        [rlid, mlid],
-                        [plid, rlid, mlid, elid, olid]][v]
-            if v in (0, 1):
-                fields["referenceId"] = case_id
-            if v == 1 and owner:
-                fields["mailbox"] = owner
-            evidence = [e for e in evidence if e]
+        # LOCKED by round 5: accepted 3/3 as [rule, record line 1, enquiry]
+        # with referenceId = the ORD and the queue id built from the dossier's
+        # own mailbox header. The gateway line is NOT cited even though
+        # `recipient` is read from it - which lines up with request_confirmation,
+        # where the cited message line is likewise the customer's request
+        # sentence and not the message's second line.
+        elid, _em = _find(mlines, re.compile(re.escape(ENQUIRY_CLAUSE)))
+        evidence = [e for e in (plid, rlid, elid) if e]
         return {"action": "create_draft", "evidence": evidence,
                 "fields": fields}
     return None
