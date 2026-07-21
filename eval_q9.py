@@ -391,7 +391,10 @@ def transcription_report(proposals, dossiers):
     by_dossier = {d["dossierId"]: d for d in dossiers}
     constants = {"approved_delivery_notice", "order_status", "VERIFY_REQUEST",
                  "delivery_window", "INDIRECT_PROMPT_INJECTION",
-                 "ALREADY_COMPLETED", "DUPLICATE", "INFORMATIONAL"}
+                 "ALREADY_COMPLETED", "DUPLICATE", "INFORMATIONAL",
+                 # Frozen ids from the schema, deliberately absent from any
+                 # dossier: they are written by us, not read from untrusted text.
+                 "mailroom"}
     for p in proposals:
         dossier = by_dossier.get(p["dossierId"], {})
         # Anything the dossier itself states: line text, its own identifiers,

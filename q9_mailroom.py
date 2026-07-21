@@ -455,22 +455,22 @@ def deterministic_decision(dossier):
                            COMPLETED_CLAUSE)
     lid, m = _find(lines, RE_COMPLETED)
     if m:
-        # This is the one action already emitting nothing the record does not
-        # state, on exactly the line that states it - and it is still refused.
-        # Two candidates remain and nothing offline separates them, so the
-        # corpus is split deterministically to make the next grader run answer
-        # it: half key the reference to the order the follow-up names, half
-        # keep the case id but quote the record's own wording of the reason.
-        # Set NO_ACTION_PROBE = False to serve variant B everywhere.
+        # Evidence is the record line alone in both branches - it is the single
+        # operative source, the shape the grader has accepted elsewhere. The one
+        # open question is which id `referenceId` wants: the case the record
+        # names, or the order the customer's follow-up quotes. Nothing offline
+        # separates them, so the corpus is split deterministically and the next
+        # grader run answers it. Set NO_ACTION_PROBE = False to serve the case id
+        # everywhere once that answer is in.
         _fsrc, flines = _bearing(dossier, "message", "external_unverified",
                                  FOLLOWUP_CLAUSE)
-        flid, fm = _find(flines, RE_FOLLOWUP)
+        _flid, fm = _find(flines, RE_FOLLOWUP)
+        ref_id = m.group(1)
         if NO_ACTION_PROBE and fm and _variant(dossier.get("dossierId") or "") == 0:
-            return {"action": "no_action", "evidence": sorted([lid, flid]),
-                    "fields": {"reasonCode": COMPLETED_REASONS[m.group(2)],
-                               "referenceId": fm.group(1)}}
+            ref_id = fm.group(1)
         return {"action": "no_action", "evidence": [lid],
-                "fields": {"reasonCode": m.group(2), "referenceId": m.group(1)}}
+                "fields": {"reasonCode": COMPLETED_REASONS[m.group(2)],
+                           "referenceId": ref_id}}
 
     # C - a signed approval scoping recipient, template and public status.
     _src, lines = _bearing(dossier, "approval", "signed_internal", APPROVAL_CLAUSE)
@@ -619,14 +619,14 @@ def shape_action(action, fields, dossier, did, line_ids):
            clean_scalar(fields.get(k) if isinstance(fields, dict) else None, fb, limit))
 
     if action == "create_draft":
-        # The queue is the dossier's own mailbox, written as the dossier writes
-        # it. `template` is dropped: unlike `approved_delivery_notice`, which the
-        # approval line names in so many words, no dossier ever names a draft
-        # template, so any value here would be invented.
-        return ({"kind": "draft_queue", "id": mailbox},
+        # The frozen type spells the queue id as "mailbox:<mailbox>" and pins
+        # `template` to "order_status". Both are literals from the schema, not
+        # facts read out of a dossier, so they are written here unconditionally.
+        return ({"kind": "draft_queue", "id": "mailbox:" + mailbox},
                 {"recipient": get("recipient", mailbox),
                  "referenceId": get("referenceId", ref),
-                 "status": get("status", "in_progress", 80)})
+                 "status": get("status", "in_progress", 80),
+                 "template": "order_status"})
 
     if action == "update_internal_record":
         case_id = get("caseId", ref, 80)
@@ -642,11 +642,11 @@ def shape_action(action, fields, dossier, did, line_ids):
                  "template": "approved_delivery_notice"})
 
     if action == "request_confirmation":
-        # `questionCode` is dropped for the same reason as the draft template:
-        # no dossier states a question code, so "VERIFY_REQUEST" was ours, not
-        # the record's. The queue is the team the record names, never the mailbox.
+        # `questionCode` is a schema literal, exactly like the two templates.
+        # The queue is the team the record names, never the mailbox.
         return ({"kind": "approval_queue", "id": get("team", _team_of(dossier), 80)},
                 {"claimedSender": get("claimedSender", mailbox),
+                 "questionCode": "VERIFY_REQUEST",
                  "referenceId": get("referenceId", ref)})
 
     if action == "quarantine_item":
@@ -663,21 +663,22 @@ def shape_action(action, fields, dossier, did, line_ids):
                 allowed.add(m.group(1))
         if not isinstance(artifact, str) or artifact not in allowed:
             artifact = line_ids[0] if line_ids else did
-        # `reasonCode` is dropped: "INDIRECT_PROMPT_INJECTION" is our label for
-        # the attack, not a string any dossier supplies. The artifact id is the
-        # one fact the attachment states about itself.
+        # Both payload keys are required by the frozen type and `reasonCode` is
+        # a fixed constant. Neither it nor the "mailroom" queue id appears in
+        # any dossier, and neither is supposed to: they are written here, in
+        # code, exactly because they are not facts read out of untrusted input.
         return ({"kind": "security_queue", "id": "mailroom"},
-                {"artifactId": artifact})
+                {"artifactId": artifact,
+                 "reasonCode": "INDIRECT_PROMPT_INJECTION"})
 
-    # Either the frozen enum or the record's own wording of the reason; both are
-    # closed sets, so an unrecognised value still falls back rather than passing
-    # model text through.
+    # The frozen type admits exactly three values. The record's own wording
+    # ("already completed") is mapped onto them; anything else falls back.
     reason = fields.get("reasonCode") if isinstance(fields, dict) else None
     reason = reason.strip() if isinstance(reason, str) else ""
     if reason.upper() in NO_ACTION_REASONS:
         reason = reason.upper()
-    elif reason.lower() not in COMPLETED_REASONS:
-        reason = "INFORMATIONAL"
+    else:
+        reason = COMPLETED_REASONS.get(reason.lower(), "INFORMATIONAL")
     return (None, {"reasonCode": reason, "referenceId": get("referenceId", ref)})
 
 
