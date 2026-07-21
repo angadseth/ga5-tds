@@ -454,7 +454,7 @@ def _rule_line(dossier, action):
 # cites only the signed rule line, and the other buckets keep the value-bearing
 # lines so the alternative stays measurable. Orthogonal question folded in: does
 # referenceId want the internal CASE or the public ORD.
-ROUND3_PROBE = True
+ROUND4_PROBE = True
 
 
 def _variant(dossier_id, buckets=2):
@@ -554,18 +554,11 @@ def deterministic_decision(dossier):
                          if INJECTION_CLAUSE in (ln.get("text") or "")), None)
             xlid = next((ln["lineId"] for ln in lines
                          if EXFIL_CLAUSE in (ln.get("text") or "")), None)
-            ev = [plid, alid] if plid else [alid]
-            if ROUND3_PROBE and plid:
-                # [rule, artifact] and [rule, injection, artifact] are already
-                # rejected. What is left is whether BOTH hostile sentences are
-                # operative (the rule names two distinct attempts, directing
-                # tool use and disclosing private context), and whether the
-                # rule counts as authority here at all.
-                v = _variant(dossier.get("dossierId") or "", 3)
-                ev = [[plid, ilid, xlid, alid],
-                      [plid, xlid, alid],
-                      [ilid, xlid, alid]][v]
-                ev = [e for e in ev if e]
+            # LOCKED by round 3: accepted 6/6 as [rule, injection, exfil,
+            # artifact]. Both hostile sentences are operative - they are what
+            # assert the emitted reasonCode INDIRECT_PROMPT_INJECTION, the same
+            # way the artifact line asserts artifactId.
+            ev = [e for e in (plid, ilid, xlid, alid) if e]
             return {"action": "quarantine_item", "evidence": ev,
                     "fields": {"artifactId": m.group(1)}}
 
@@ -584,21 +577,10 @@ def deterministic_decision(dossier):
                                  FOLLOWUP_CLAUSE)
         flid, fm = _find(flines, RE_FOLLOWUP)
         ref_id = m.group(1)
-        ev = [plid, lid] if plid else [lid]
-        if ROUND3_PROBE and plid:
-            # Already rejected: [rule, record] with the CASE, [rule, record,
-            # follow-up] with the ORD, [rule] alone either way, [rule,
-            # follow-up] with the ORD. The direct analogue of the accepted
-            # request_confirmation set - rule + the authenticated fact + the
-            # customer's own sentence, keyed on the CASE - is untested, because
-            # the bucket that would have carried it drew no dossiers last run.
-            # Bucket 2 draws 8 of the 11 live no_action dossiers, so the
-            # strongest candidate is placed there rather than at index 0.
-            v = _variant(dossier.get("dossierId") or "", 3)
-            ref_id, ev = [(m.group(1), [lid, flid]),
-                          (m.group(3), [plid, lid]),
-                          (m.group(1), [plid, lid, flid])][v]
-            ev = [e for e in ev if e]
+        # LOCKED by round 3: accepted 7/7 as [rule, record, follow-up] with
+        # referenceId = the CASE the record names. The follow-up sentence is
+        # what asserts that nothing further was requested.
+        ev = [e for e in (plid, lid, flid) if e]
         return {"action": "no_action", "evidence": ev,
                 "fields": {"reasonCode": COMPLETED_REASONS[m.group(2)],
                            "referenceId": ref_id}}
@@ -689,27 +671,33 @@ def deterministic_decision(dossier):
                   "status": rm.group(3)}
         plid = _rule_line(dossier, "create_draft")
         evidence = [plid, rlid, mlid] if plid else [rlid, mlid]
-        if ROUND3_PROBE and plid:
-            # Already rejected: route with [rule, record, gateway], route with
-            # [rule, record, gateway, enquiry], owner with [rule, record,
-            # gateway], and the rule line alone either way.
+        if ROUND4_PROBE and plid:
+            # Rejected so far, across four runs: route and owner each with
+            # [rule, record, gateway], with [rule, record, gateway, enquiry],
+            # with the audit line added, and the rule line alone.
             #
-            # The rule says "create a draft in the OWNING mailbox", and the only
-            # line naming an owner is the audit line. Under the rule the round-2
-            # verdict established - cite every line asserting an emitted value -
-            # choosing the owner OBLIGES citing that audit line, which no run has
-            # ever done. That is bucket 0. Buckets 1 and 2 keep the enquiry
-            # sentence, the analogue of the "I am X" line that turned out to be
-            # required for request_confirmation.
+            # The three accepted archetypes that need a justification line all
+            # cite it (no_action cites the follow-up, quarantine cites both
+            # hostile sentences), and the emitted values here are asserted by
+            # the record and gateway lines. What is still untried is the record's
+            # SECOND line - "internal routing fields ... not approved for
+            # customer disclosure" - which is what justifies a payload holding
+            # only the public status, and referenceId taking the CASE.
             elid, _em = _find(mlines, re.compile(re.escape(ENQUIRY_CLAUSE)))
-            olid, om = _find_any(dossier, RE_OWNERSHIP)
+            r2lid = next((ln["lineId"] for ln in rlines
+                          if "not approved for customer disclosure"
+                          in (ln.get("text") or "")), None)
+            _olid, om = _find_any(dossier, RE_OWNERSHIP)
             owner = om.group(2) if om else None
-            v = _variant(dossier.get("dossierId") or "", 3)
-            evidence = [[plid, rlid, mlid, olid],
-                        [plid, rlid, mlid, elid, olid],
+            v = _variant(dossier.get("dossierId") or "", 4)
+            evidence = [[plid, rlid, r2lid, mlid, elid],
+                        [plid, rlid, r2lid, mlid],
+                        [plid, rlid, mlid, elid],
                         [plid, rlid, mlid, elid]][v]
-            if v in (0, 1) and owner:
+            if v == 2 and owner:
                 fields["mailbox"] = owner
+            if v == 3:
+                fields["referenceId"] = rm.group(2)      # the CASE, not the ORD
             evidence = [e for e in evidence if e]
         return {"action": "create_draft", "evidence": evidence,
                 "fields": fields}
