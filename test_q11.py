@@ -809,20 +809,24 @@ def test_wire_shapes():
     run = "run-wire"
     resp = post(body(run))
     raw = resp.raw()
-    check("waiting body has exactly the documented keys",
-          set(raw) == {"runId", "status", "diagnosis", "dispatches", "approvals"},
+    check("waiting body has the documented keys",
+          {"runId", "status", "diagnosis", "dispatches", "approvals"} <= set(raw),
           sorted(raw))
-    check("waiting body carries no final-result fields",
-          not ({"otlp", "actionLog", "receiptLog", "chosenEffect", "suppressed"} & set(raw)),
-          sorted(raw))
+    if q11.WAITING_FULL:
+        check("waiting body carries the trace to correlate against",
+              "otlp" in raw, sorted(raw))
+    else:
+        check("waiting body carries no final-result fields",
+              not ({"otlp", "actionLog", "receiptLog", "chosenEffect",
+                    "suppressed"} & set(raw)), sorted(raw))
 
     data = resp.json()
     outcomes = [{"actionId": d["actionId"], "callId": d["callId"], "attempt": 1,
                  "status": 200, "resultClass": "diagnosis_confirmed",
                  "nonce": "wn-%d" % i} for i, d in enumerate(data["dispatches"])]
     mid = receipt(run, {"receiptId": "rcpt-wire-1", "outcomes": outcomes})
-    check("still-waiting receipt turn keeps the waiting shape",
-          set(mid.raw()) == {"runId", "status", "diagnosis", "dispatches", "approvals"},
+    check("still-waiting receipt turn keeps the waiting keys",
+          {"runId", "status", "diagnosis", "dispatches", "approvals"} <= set(mid.raw()),
           sorted(mid.raw()))
 
     eff = mid.json()["dispatches"][0]

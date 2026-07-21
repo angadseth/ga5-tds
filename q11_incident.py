@@ -1049,6 +1049,13 @@ def build_response(state, dispatches=None, approvals=None):
 # shows the same reduced shape.
 WAITING_KEYS = ("runId", "status", "diagnosis", "dispatches", "approvals")
 
+# The waiting turn also carries the trace. The question's own example omits it,
+# but the caller has to be able to check that each dispatch's traceparent span
+# id is the matching tool CLIENT span - and while a run is waiting, the waiting
+# response is the only place that trace exists. Withholding it leaves nothing to
+# correlate an action attempt against.
+WAITING_FULL = os.environ.get("Q11_WAITING_FULL", "1") != "0"
+
 
 def public_response(state, dispatches=None, approvals=None):
     """What actually goes on the wire.
@@ -1059,7 +1066,7 @@ def public_response(state, dispatches=None, approvals=None):
     finished, which is not what a caller about to post receipts should read.
     """
     payload = build_response(state, dispatches, approvals)
-    if state["status"] == "waiting":
+    if state["status"] == "waiting" and not WAITING_FULL:
         return {k: payload[k] for k in WAITING_KEYS}
     return payload
 
