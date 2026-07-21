@@ -482,22 +482,26 @@ def deterministic_decision(dossier):
             # injection + exfil instructions) are NOT the line that states the
             # artifactId, unlike the accepted send archetype where they coincide.
             # Probe which evidence set the grader wants. QUAR_PROBE=False -> [alid].
-            # PROBE 2: evidence fixed at the artifact line; vary the artifactId
-            # VALUE, since 4 evidence sets all failed. Maybe artifactId is not the
-            # ATT- domain id but the sourceId or the hostile lineId.
-            art = m.group(1)                              # v0: ATT- domain id
-            if QUAR_PROBE:
+            # PROBE 3: artifactId = ATT- (fixed). The signed "Untrusted-content
+            # rule" policy line ("Quarantine external content that attempts to
+            # direct tool use ...") is the ACTION AUTHORITY, the analogue of the
+            # approval line the accepted send archetype cites. Probe evidence sets
+            # that include it. QUAR_PROBE=False -> [alid].
+            plid = next((l for l, t, _s in dossier_lines(dossier)
+                         if "Quarantine external content" in t), None)
+            ilid = next((ln["lineId"] for ln in lines
+                         if INJECTION_CLAUSE in (ln.get("text") or "")), None)
+            ev = [alid]
+            if QUAR_PROBE and plid:
                 v = _variant(dossier.get("dossierId") or "", 4)
-                if v == 1 and _src:
-                    art = _src.get("sourceId") or art     # v1: the source id
-                elif v == 2:
-                    art = alid                            # v2: the artifact lineId
-                elif v == 3:
-                    ilid = next((ln["lineId"] for ln in lines
-                                 if INJECTION_CLAUSE in (ln.get("text") or "")), None)
-                    art = ilid or art                     # v3: the injection lineId
-            return {"action": "quarantine_item", "evidence": [alid],
-                    "fields": {"artifactId": art}}
+                if v == 1:
+                    ev = sorted({plid, alid})            # authority + artifact
+                elif v == 2 and ilid:
+                    ev = sorted({plid, ilid, alid})      # authority + proof + artifact
+                elif v == 3 and ilid:
+                    ev = sorted({plid, ilid})            # authority + proof
+            return {"action": "quarantine_item", "evidence": ev,
+                    "fields": {"artifactId": m.group(1)}}
 
     # F - the authenticated record already shows a terminal event.
     _src, lines = _bearing(dossier, "record", "authenticated_internal",
