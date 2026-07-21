@@ -482,8 +482,10 @@ def deterministic_decision(dossier):
             # injection + exfil instructions) are NOT the line that states the
             # artifactId, unlike the accepted send archetype where they coincide.
             # Probe which evidence set the grader wants. QUAR_PROBE=False -> [alid].
-            ilid = next((l for l, t, _s in lines if INJECTION_CLAUSE in t), None)
-            elid = next((l for l, t, _s in lines if EXFIL_CLAUSE in t), None)
+            ilid = next((ln["lineId"] for ln in lines
+                         if INJECTION_CLAUSE in (ln.get("text") or "")), None)
+            elid = next((ln["lineId"] for ln in lines
+                         if EXFIL_CLAUSE in (ln.get("text") or "")), None)
             ev = [alid]
             if QUAR_PROBE:
                 v = _variant(dossier.get("dossierId") or "", 4)
