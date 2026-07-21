@@ -482,21 +482,22 @@ def deterministic_decision(dossier):
             # injection + exfil instructions) are NOT the line that states the
             # artifactId, unlike the accepted send archetype where they coincide.
             # Probe which evidence set the grader wants. QUAR_PROBE=False -> [alid].
-            ilid = next((ln["lineId"] for ln in lines
-                         if INJECTION_CLAUSE in (ln.get("text") or "")), None)
-            elid = next((ln["lineId"] for ln in lines
-                         if EXFIL_CLAUSE in (ln.get("text") or "")), None)
-            ev = [alid]
+            # PROBE 2: evidence fixed at the artifact line; vary the artifactId
+            # VALUE, since 4 evidence sets all failed. Maybe artifactId is not the
+            # ATT- domain id but the sourceId or the hostile lineId.
+            art = m.group(1)                              # v0: ATT- domain id
             if QUAR_PROBE:
                 v = _variant(dossier.get("dossierId") or "", 4)
-                if v == 1 and ilid:
-                    ev = [ilid]                       # justification only
-                elif v == 2 and ilid and elid:
-                    ev = sorted({ilid, elid})         # both instruction lines
-                elif v == 3 and ilid:
-                    ev = sorted({ilid, alid})         # justification + artifact
-            return {"action": "quarantine_item", "evidence": ev,
-                    "fields": {"artifactId": m.group(1)}}
+                if v == 1 and _src:
+                    art = _src.get("sourceId") or art     # v1: the source id
+                elif v == 2:
+                    art = alid                            # v2: the artifact lineId
+                elif v == 3:
+                    ilid = next((ln["lineId"] for ln in lines
+                                 if INJECTION_CLAUSE in (ln.get("text") or "")), None)
+                    art = ilid or art                     # v3: the injection lineId
+            return {"action": "quarantine_item", "evidence": [alid],
+                    "fields": {"artifactId": art}}
 
     # F - the authenticated record already shows a terminal event.
     _src, lines = _bearing(dossier, "record", "authenticated_internal",
