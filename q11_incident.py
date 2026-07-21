@@ -350,6 +350,37 @@ def trim_transcript(transcript):
     return transcript[:head] + "\n...[transcript trimmed]...\n" + transcript[-tail:]
 
 
+EVIDENCE_ID_RE = re.compile(r"([A-Za-z0-9_.:\-]{2,64})")
+
+
+def clean_evidence(values, index, limit=4):
+    """Map whatever the model called an evidence id onto a real one.
+
+    The transcript presents ids as "[ev_x] text", and models copy the brackets
+    back: "[ev_x]" is not a key of the index, so a strict membership test threw
+    away every id the model chose and left the heuristic fallback to pick the
+    first two lines - which in this corpus are always decoys. The ids are
+    opaque, so recovering them is a matter of stripping the punctuation the
+    transcript put around them, never of guessing.
+    """
+    out, seen = [], set()
+    for raw in values or []:
+        if not isinstance(raw, str):
+            continue
+        ev = raw.strip().strip("[](){}<>\"'").strip()
+        if ev not in index:
+            for cand in EVIDENCE_ID_RE.findall(raw):
+                if cand in index:
+                    ev = cand
+                    break
+        if ev in index and ev not in seen:
+            seen.add(ev)
+            out.append(ev)
+        if len(out) >= limit:
+            break
+    return out
+
+
 def heuristic_evidence(index, root_cause, want=2):
     """Deterministic fallback: evidence lines sharing the most root-cause terms."""
     terms = [w for w in WORD_RE.findall((root_cause or "").lower())
@@ -545,13 +576,7 @@ def normalise_plan(raw, incident, catalog, policy, max_diag):
     if not isinstance(root, str) or root not in allowed:
         root = match_root_cause(root, allowed)
 
-    evidence = [e for e in (raw.get("evidence") or []) if isinstance(e, str) and e in index]
-    seen, ordered = set(), []
-    for ev in evidence:
-        if ev not in seen:
-            seen.add(ev)
-            ordered.append(ev)
-    evidence = ordered[:4]
+    evidence = clean_evidence(raw.get("evidence"), index)
     if len(evidence) < 2:
         for ev in heuristic_evidence(index, root, want=4):
             if ev not in evidence:
@@ -574,7 +599,7 @@ def normalise_plan(raw, incident, catalog, policy, max_diag):
         diagnostics.append({
             "toolName": tool["name"],
             "arguments": coerce_arguments(tool, item.get("arguments"), incident),
-            "evidence": [e for e in (item.get("evidence") or []) if e in index][:4] or evidence[:2],
+            "evidence": clean_evidence(item.get("evidence"), index) or evidence[:2],
         })
     if not diagnostics and candidates:
         tool = candidates[0]
@@ -595,7 +620,7 @@ def normalise_plan(raw, incident, catalog, policy, max_diag):
         effect = {
             "toolName": effect_name,
             "arguments": coerce_arguments(tool, raw_effect.get("arguments"), incident),
-            "evidence": [e for e in (raw_effect.get("evidence") or []) if e in index][:4] or evidence[:2],
+            "evidence": clean_evidence(raw_effect.get("evidence"), index) or evidence[:2],
         }
     return {"rootCause": root, "evidence": evidence,
             "diagnostics": diagnostics, "effect": effect}
