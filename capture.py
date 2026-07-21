@@ -23,7 +23,7 @@ SECRET = os.environ.get("CAPTURE_SECRET", "")
 MAX_BODY = 2_000_000
 _lock = threading.Lock()
 
-WATCH = ("/q8/check", "/q9/mailroom", "/v2/incidents", "/a2a/")
+WATCH = ("/q8/check", "/q9/mailroom", "/v2/incidents", "/a2a/", "/q4/scan")
 
 
 def _conn():
