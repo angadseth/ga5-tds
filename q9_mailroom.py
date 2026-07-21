@@ -529,8 +529,8 @@ def deterministic_decision(dossier):
             elif v == 2:
                 ev = [slid]                      # status line only (drops permit)
             elif v == 3:                         # add a third, covering line
-                rlid, _rm = _find(dossier_lines(dossier),
-                                  re.compile(r"customer-visible status"))
+                rlid = next((l for l, t, _s in dossier_lines(dossier)
+                             if "customer-visible status" in t), None)
                 ev = sorted({lid, slid, rlid}) if rlid else [lid, slid]
         return {"action": "send_approved_notice",
                 "evidence": ev,
