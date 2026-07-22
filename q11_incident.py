@@ -1205,7 +1205,7 @@ WAITING_KEYS = ("runId", "status", "diagnosis", "dispatches", "approvals")
 # id is the matching tool CLIENT span - and while a run is waiting, the waiting
 # response is the only place that trace exists. Withholding it leaves nothing to
 # correlate an action attempt against.
-WAITING_FULL = os.environ.get("Q11_WAITING_FULL", "0") != "0"
+WAITING_FULL = os.environ.get("Q11_WAITING_FULL", "1") != "0"
 
 
 def public_response(state, dispatches=None, approvals=None):
