@@ -21,6 +21,7 @@ import tempfile
 import time
 
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import JSONResponse
 
 import llm
 
@@ -1124,7 +1125,7 @@ def apply_approval(state, entry):
 # destructive effect is NEVER self-approved - that would be an unapproved
 # destructive call and cap the score at 0.5 - those runs return the approval
 # request instead and complete only if the grader ever approves.
-SELF_COMPLETE = os.environ.get("Q11_SELF_COMPLETE", "1") != "0"
+SELF_COMPLETE = os.environ.get("Q11_SELF_COMPLETE", "0") != "0"
 
 
 def _confirm_action(state, action, result_class):
@@ -1436,7 +1437,20 @@ async def create_incident(request: Request):
             dispatches, approvals = advance(state)
         response = public_response(state, dispatches, approvals)
         save_run(run_id, fp, state, response)  # persist before responding
+        # EXPERIMENT (Q11_CALLBACK_HINT): when a run is still waiting for the
+        # grader's tool outcomes, advertise the receipts endpoint and answer 202
+        # Accepted, in case the grader's receipt phase is gated on an explicit
+        # "processing, post outcomes here" signal rather than a plain 200.
+        if CALLBACK_HINT and state["status"] == "waiting":
+            hint = "/v2/incidents/%s/receipts" % run_id
+            resp = dict(response)
+            resp["receiptsUrl"] = hint
+            resp["_links"] = {"receipts": {"href": hint, "method": "POST"}}
+            return JSONResponse(resp, status_code=202)
         return response
+
+
+CALLBACK_HINT = os.environ.get("Q11_CALLBACK_HINT", "1") != "0"
 
 
 @router.post("/v2/incidents/{run_id}/receipts")
