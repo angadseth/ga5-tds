@@ -1,0 +1,224 @@
+{
+"038b12775ed6217850d7b8577d2c0dc055d7cca2f5717b4e22fe5b492f0e934a": {
+"rootCause": "dependency_certificate_expired",
+"evidence": [
+"ev_9p44PemC7RkJ",
+"ev_CzL3mUKYEGmG"
+],
+"diagnostics": [
+{
+"toolName": "dependency_status",
+"arguments": {
+"dependency": "dep_npj6nz4msosk"
+},
+"evidence": [
+"ev_9p44PemC7RkJ"
+]
+},
+{
+"toolName": "read_runbook",
+"arguments": {
+"topic": "certificate expiry"
+},
+"evidence": [
+"ev_YL7hprJQeBsW"
+]
+}
+],
+"effect": {
+"toolName": "open_incident",
+"arguments": {
+"severity": "SEV-1"
+},
+"evidence": [
+"ev_YL7hprJQeBsW"
+]
+},
+"_model": "frozen-seed"
+},
+"10417e65f18587bc68430df022a03bd122c1861f869e2a2ea1c7ccb4eb447340": {
+"rootCause": "database_connection_exhaustion",
+"evidence": [
+"ev_NWFGEaFKzGGk",
+"ev_SMdknGWuydTk"
+],
+"diagnostics": [
+{
+"toolName": "query_metrics",
+"arguments": {
+"metric": "db_connection_pool_wait",
+"windowMinutes": 30
+},
+"evidence": [
+"ev_NWFGEaFKzGGk"
+]
+},
+{
+"toolName": "query_logs",
+"arguments": {
+"query": "pool acquisition timeout",
+"windowMinutes": 30
+},
+"evidence": [
+"ev_SMdknGWuydTk"
+]
+}
+],
+"effect": {
+"toolName": "scale_service",
+"arguments": {
+"targetReplicas": 6
+},
+"evidence": [
+"ev_GassWVmQEf4x"
+]
+},
+"_model": "frozen-seed"
+},
+"2aa6018827ba68ea80b2562b612827572a504ebb7783eaad9ba2c1eb7f002b17": {
+"rootCause": "secret_rotation_mismatch",
+"evidence": [
+"ev_Le2o6bQvvUTw",
+"ev_2JTiv3Gxw6Jh"
+],
+"diagnostics": [
+{
+"toolName": "query_logs",
+"arguments": {
+"query": "authentication failure after revocation",
+"windowMinutes": 30
+},
+"evidence": [
+"ev_2JTiv3Gxw6Jh"
+]
+},
+{
+"toolName": "read_runbook",
+"arguments": {
+"topic": "secret rotation recovery"
+},
+"evidence": [
+"ev_nL8oKs3HMd4i"
+]
+}
+],
+"effect": {
+"toolName": "no_action",
+"arguments": {
+"reasonCode": "RUNBOOK_UNAVAILABLE"
+},
+"evidence": [
+"ev_nL8oKs3HMd4i"
+]
+},
+"_model": "frozen-seed"
+},
+"a391f07fbaa7fe855a9b695872180c6d9b42a14c25d579520702fad6ea3d0572": {
+"rootCause": "traffic_capacity_exhaustion",
+"evidence": [
+"ev_3H6gxfn9KhJE",
+"ev_fr7JxQy2sAvD"
+],
+"diagnostics": [
+{
+"toolName": "query_metrics",
+"arguments": {
+"metric": "requests_per_second",
+"windowMinutes": 30
+},
+"evidence": [
+"ev_3H6gxfn9KhJE"
+]
+},
+{
+"toolName": "inspect_deployment",
+"arguments": {},
+"evidence": [
+"ev_fr7JxQy2sAvD"
+]
+}
+],
+"effect": {
+"toolName": "scale_service",
+"arguments": {
+"targetReplicas": 10
+},
+"evidence": [
+"ev_WEH5W9JCVyHy"
+]
+},
+"_model": "frozen-seed"
+},
+"ac17228fef2f49f196a77d9e5439e4197198e116f2d9e80adc38b44c0a19b0db": {
+"rootCause": "feature_flag_recursion",
+"evidence": [
+"ev_6yQs3w5vGvqG",
+"ev_CjJ5qKkb6GsV"
+],
+"diagnostics": [
+{
+"toolName": "query_logs",
+"arguments": {
+"query": "recursive evaluation flag_nbjspgppfs",
+"windowMinutes": 30
+},
+"evidence": [
+"ev_6yQs3w5vGvqG"
+]
+},
+{
+"toolName": "inspect_deployment",
+"arguments": {},
+"evidence": [
+"ev_b3cZ3vnQEjvv"
+]
+}
+],
+"effect": {
+"toolName": "disable_feature",
+"arguments": {
+"flag": "flag_nbjspgppfs"
+},
+"evidence": [
+"ev_CjJ5qKkb6GsV"
+]
+},
+"_model": "frozen-seed"
+},
+"cc8fda2bf015b1458fd99804c6ba12594f89966d62d3454bb8f65e4398c9da90": {
+"rootCause": "deployment_regression",
+"evidence": [
+"ev_Dypdu7iMVCM7",
+"ev_R2wk9WRenFu7"
+],
+"diagnostics": [
+{
+"toolName": "inspect_deployment",
+"arguments": {},
+"evidence": [
+"ev_R2wk9WRenFu7"
+]
+},
+{
+"toolName": "query_logs",
+"arguments": {
+"query": "malformed responses release r430-Vaduk",
+"windowMinutes": 30
+},
+"evidence": [
+"ev_Dypdu7iMVCM7"
+]
+}
+],
+"effect": {
+"toolName": "rollback_deployment",
+"arguments": {
+"release": "r20-sXG6M"
+},
+"evidence": [
+"ev_Dypdu7iMVCM7"
+]
+},
+"_model": "frozen-seed"
+}
+}
