@@ -1140,6 +1140,12 @@ def _confirm_action(state, action, result_class):
     })
 
 
+# When set, confirm the diagnostics but leave the justified EFFECT as a pending
+# dispatch in the response (status waiting) instead of self-completing it - so the
+# grader observes a concrete pending action attempt to score. Toggle experiment.
+EFFECT_PENDING = os.environ.get("Q11_EFFECT_PENDING", "1") != "0"
+
+
 def self_complete(state):
     """Confirm diagnostics, then run the (non-gated) effect, all in one turn.
     Returns (dispatches, approvals): empty for a completed run; the approval
@@ -1155,6 +1161,11 @@ def self_complete(state):
     # 2. advance: creates the effect dispatch, or opens the approval gate
     dispatches, approvals = advance(state)
     if approvals:                       # gated destructive effect - do NOT self-approve
+        return dispatches, approvals
+
+    if EFFECT_PENDING:
+        # leave the effect as a pending dispatch - the grader sees a concrete
+        # action attempt it can respond to; the run stays "waiting".
         return dispatches, approvals
 
     # 3. confirm the effect attempt if one was dispatched, then finish
