@@ -1143,7 +1143,7 @@ def _confirm_action(state, action, result_class):
 # When set, confirm the diagnostics but leave the justified EFFECT as a pending
 # dispatch in the response (status waiting) instead of self-completing it - so the
 # grader observes a concrete pending action attempt to score. Toggle experiment.
-EFFECT_PENDING = os.environ.get("Q11_EFFECT_PENDING", "1") != "0"
+EFFECT_PENDING = os.environ.get("Q11_EFFECT_PENDING", "0") != "0"
 
 
 def self_complete(state):
