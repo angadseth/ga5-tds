@@ -35,6 +35,21 @@ score is zero," and the only way an action is observed is the receipt round-trip
 0/4 despite a well-formed turn-1. **Is there a precondition that gates the receipt phase, or is
 the receipt transport not firing for this question?** Happy to share a runId + timestamp.
 
+**Additional evidence (update):**
+- The Check response's category breakdown is `proposal 0/7, semantics 0/7, topology 0-1/7,
+  correlation 0/7, lifecycle 4/7, durability 0/7, redaction 7/7`. The non-zero **redaction 7/7 and
+  lifecycle 4/7 prove the grader does parse and score my turn-1 output** — so this is not a
+  total-reject/unreachable-endpoint case. The zeroed categories are exactly the ones that can only
+  be earned after the receipt round-trip (proposal confirmation, action semantics, correlation,
+  durable terminal state).
+- I verified my receipt endpoint end-to-end from an external client through the same public URL:
+  `POST /v2/incidents` → take the returned `dispatches` → `POST /v2/incidents/{runId}/receipts` with
+  matching `outcomes` returns **HTTP 200** and correctly advances the run to the approval/effect
+  stage, and that request **is** recorded in my access logs. So the endpoint, routing, and lifecycle
+  all work — the grader simply never sends the receipt during Check/Save.
+- The spec says Check "replays one identical audit receipt", but no receipt POST (original or replay)
+  ever appears. This is the crux: the documented receipt phase does not initiate for my submission.
+
 ---
 
 ## POST 2 — Q9 (q-taint-aware-agent-executor-server): only send_approved_notice is ever exact
