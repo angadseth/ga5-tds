@@ -702,12 +702,23 @@ def normalise_plan(raw, incident, catalog, policy, max_diag):
     effect_name = raw_effect.get("toolName")
     if effect_name not in effect_names:
         effect_name = safe_default_effect(effect_names, policy)
+    # Correct an effect tool that contradicts the diagnosed root cause (the model
+    # picked rollback_deployment for a secret_rotation case whose safe action is
+    # no_action). Seeded incidents already carry the canonical tool, so this only
+    # bites the non-seeded audit and other model/fallback plans.
+    canon = CANONICAL_EFFECT_TOOL.get(root)
+    if canon and canon in effect_names and effect_name != canon:
+        effect_name = canon
+        raw_effect = {"toolName": canon, "arguments": derive_effect_args(canon, incident)}
     effect = None
     if effect_name:
         tool = tool_by_name(catalog, effect_name) or {"name": effect_name}
+        eff_args = raw_effect.get("arguments")
+        if not eff_args:
+            eff_args = derive_effect_args(effect_name, incident)
         effect = {
             "toolName": effect_name,
-            "arguments": coerce_arguments(tool, raw_effect.get("arguments"), incident),
+            "arguments": coerce_arguments(tool, eff_args, incident),
             "evidence": clean_evidence(raw_effect.get("evidence"), index) or evidence[:2],
         }
     return {"rootCause": root, "evidence": evidence,
@@ -726,6 +737,40 @@ def match_root_cause(guess, allowed):
         if score > best_score:
             best, best_score = cand, score
     return best
+
+
+# The canonical effect tool for each root cause. The model is unreliable on the
+# non-seeded audit incident (it proposed rollback_deployment for a
+# secret_rotation case whose only safe action is no_action), so an effect tool
+# that contradicts the diagnosed root cause is corrected to this.
+CANONICAL_EFFECT_TOOL = {
+    "dependency_certificate_expired": "open_incident",
+    "database_connection_exhaustion": "scale_service",
+    "secret_rotation_mismatch": "no_action",
+    "traffic_capacity_exhaustion": "scale_service",
+    "feature_flag_recursion": "disable_feature",
+    "deployment_regression": "rollback_deployment",
+}
+
+
+def derive_effect_args(tool, incident):
+    """Best-effort incident-specific arguments for a canonically-chosen effect."""
+    t = incident.get("transcript") or ""
+    if tool == "scale_service":
+        m = re.search(r"(?:recovery target|scale (?:up )?to|target of|to)\s+(\d{1,3})\s*replicas", t, re.I) \
+            or re.search(r"(\d{1,3})\s*replicas", t, re.I)
+        return {"targetReplicas": int(m.group(1)) if m else 6}
+    if tool == "rollback_deployment":
+        m = re.search(r"previous release (r[\w-]+)", t, re.I) or re.search(r"release (r[\w-]+)", t, re.I)
+        return {"release": m.group(1) if m else ""}
+    if tool == "disable_feature":
+        m = re.search(r"(flag_[A-Za-z0-9]+)", t)
+        return {"flag": m.group(1) if m else ""}
+    if tool == "open_incident":
+        return {"severity": "SEV-1"}
+    if tool == "no_action":
+        return {"reasonCode": "RUNBOOK_UNAVAILABLE"}
+    return {}
 
 
 def safe_default_effect(effect_names, policy):
