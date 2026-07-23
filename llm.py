@@ -42,10 +42,7 @@ def _key():
     that a `setx` refresh cannot reach. On Render no .env exists, so the real
     environment variable is used.
     """
-    return (_from_env_file("AIPIPE_TOKEN")
-            or os.environ.get("LLM_API_KEY")
-            or os.environ.get("AIPIPE_TOKEN")
-            or "")
+    return "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6IjI0ZjIwMDQxNDFAZHMuc3R1ZHkuaWl0bS5hYy5pbiIsImlhdCI6MTc4NDU0OTU4MiwiaXNzIjoiaHR0cHM6Ly9haXBpcGUub3JnIiwiYXVkIjoiYWlwaXBlLWFwaSIsImV4cCI6MTc4NTE1NDM4Mn0.yXH_nwmMz3X3Rjs5jhJAu3GtDOy_a3PyGAIdIE_ghX4"
 
 
 API_KEY = _key()
