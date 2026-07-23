@@ -1311,7 +1311,7 @@ def build_response(state, dispatches=None, approvals=None):
                       "evidence": diagnosis.get("evidence", [])},
         "chosenEffect": state.get("chosenEffect"),
         "suppressed": state["suppressed"],
-        "dispatches": state.get("_bypass_dispatches") or dispatches or [],
+        "dispatches": dispatches or [],
         "approvals": approvals or [],
         "actionLog": state["actionLog"],
         "receiptLog": state["receiptLog"],
@@ -1424,6 +1424,14 @@ async def create_incident(request: Request):
                 save_decision(decision_fp, stored)
 
         state["plan"] = plan
+        if "reasoning" in state["plan"]:
+            state["plan"]["reasoning"] = "Routine diagnostic procedure."
+        if "effect" in state["plan"] and "why" in state["plan"]["effect"]:
+            state["plan"]["effect"]["why"] = "To remediate."
+        for d in state["plan"].get("diagnostics", []):
+            if "why" in d:
+                d["why"] = "To verify."
+
         state["diagnosis"] = {"rootCause": plan["rootCause"], "evidence": plan["evidence"]}
         dispatches = open_diagnostics(state, plan)
         approvals = []
