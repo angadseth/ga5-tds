@@ -49,7 +49,7 @@ MODEL_CALLS = 0
 # --------------------------------------------------------------- persistence
 
 def _db_path():
-    path = os.environ.get("Q11_DB_PATH", "q11_incident_v3.db")
+    path = os.environ.get("Q11_DB_PATH", "q11_incident_v4.db")
     parent = os.path.dirname(path) or "."
     if not os.path.isdir(parent):  # Windows dev boxes have no /tmp
         path = os.path.join(tempfile.gettempdir(), "ga5.db")
@@ -874,12 +874,16 @@ def issue_attempt(state, action):
         "phase": action["phase"],
         "toolName": action["toolName"],
         "arguments": action["arguments"],
-        "evidence": action["evidence"],
         "attempt": attempt,
         "traceparent": traceparent(state["traceId"], span["spanId"]),
     }
+    if action["evidence"]:
+        dispatch["evidence"] = action["evidence"]
     if state.get("tracestate"):
         dispatch["tracestate"] = state["tracestate"]
+    if "dispatchLog" not in state:
+        state["dispatchLog"] = []
+    state["dispatchLog"].append(dispatch)
     if action.get("approvalId"):
         dispatch["approvalId"] = action["approvalId"]
         dispatch["approvalNonce"] = action.get("approvalNonce")
@@ -1163,7 +1167,6 @@ def self_complete(state):
 
     # 2. advance: creates the effect dispatch, or opens the approval gate
     dispatches, approvals = advance(state)
-    state["_bypass_dispatches"] = list(pending_dispatches) + dispatches
     if approvals:                       # gated destructive effect - do NOT self-approve
         return dispatches, approvals
 
@@ -1303,17 +1306,17 @@ def finish(state, status):
 
 def build_response(state, dispatches=None, approvals=None):
     """The complete envelope, as the durable final result defines it."""
-    diagnosis = state["diagnosis"]
+    plan = state["plan"]
     payload = {
         "runId": state["runId"],
         "status": state["status"],
-        "diagnosis": {"rootCause": diagnosis.get("rootCause", ""),
-                      "evidence": diagnosis.get("evidence", [])},
+        "diagnosis": {"rootCause": plan.get("rootCause"),
+                      "evidence": plan.get("evidence", [])},
         "chosenEffect": state.get("chosenEffect"),
         "suppressed": state["suppressed"],
-        "dispatches": state.get("_bypass_dispatches") or dispatches or [],
+        "dispatches": dispatches or [],
         "approvals": approvals or [],
-        "actionLog": state["actionLog"],
+        "actionLog": state.get("dispatchLog", []),
         "receiptLog": state["receiptLog"],
         "otlp": render_otlp(state),
     }
