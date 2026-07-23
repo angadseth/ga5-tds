@@ -49,7 +49,7 @@ MODEL_CALLS = 0
 # --------------------------------------------------------------- persistence
 
 def _db_path():
-    path = os.environ.get("Q11_DB_PATH", "q11_incident_v6.db")
+    path = os.environ.get("Q11_DB_PATH", "q11_incident_v7.db")
     parent = os.path.dirname(path) or "."
     if not os.path.isdir(parent):  # Windows dev boxes have no /tmp
         path = os.path.join(tempfile.gettempdir(), "ga5.db")
@@ -1312,7 +1312,7 @@ def build_response(state, dispatches=None, approvals=None):
                       "evidence": plan.get("evidence", [])},
         "chosenEffect": state.get("chosenEffect"),
         "suppressed": state["suppressed"],
-        "dispatches": dispatches or [],
+        "dispatches": dispatches or state.get("dispatchLog", []),
         "approvals": approvals or [],
         "actionLog": state.get("dispatchLog", []),
         "receiptLog": state["receiptLog"],
@@ -1463,6 +1463,9 @@ async def create_incident(request: Request):
                 approvals = []
             response = public_response(state, dispatches, approvals)
 
+        # Normalize through canon (sorted keys) so POST and GET responses are
+        # byte-identical for durability checks.
+        response = json.loads(canon(response))
         save_run(run_id, fp, state, response)  # persist before responding
         return response
 
@@ -1542,6 +1545,7 @@ async def post_receipt(run_id: str, request: Request):
         state.pop("currentReceiptId", None)
         state["receiptIds"].append(receipt_id)
         response = public_response(state, dispatches, approvals_out)
+        response = json.loads(canon(response))
         save_run(run_id, run["fingerprint"], state, response)
         save_receipt(run_id, receipt_id, fp, response)
         return response
@@ -1553,6 +1557,10 @@ async def get_incident(run_id: str):
     if not run:
         raise HTTPException(status_code=404, detail="unknown runId")
     state = run["state"]
+    # For completed/failed runs, return the persisted response byte-for-byte
+    # so POST and GET are identical (durability check).
+    if state["status"] in ("completed", "failed"):
+        return run["response"]
     return public_response(state, pending_dispatches(state),
                            pending_approvals(state))
 
