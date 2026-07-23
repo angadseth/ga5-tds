@@ -1129,7 +1129,7 @@ def apply_approval(state, entry):
 # destructive effect is NEVER self-approved - that would be an unapproved
 # destructive call and cap the score at 0.5 - those runs return the approval
 # request instead and complete only if the grader ever approves.
-SELF_COMPLETE = os.environ.get("Q11_SELF_COMPLETE", "1") != "0"
+SELF_COMPLETE = os.environ.get("Q11_SELF_COMPLETE", "0") != "0"
 
 
 def _confirm_action(state, action, result_class):
@@ -1307,19 +1307,27 @@ def finish(state, status):
 def build_response(state, dispatches=None, approvals=None):
     """The complete envelope, as the durable final result defines it."""
     plan = state["plan"]
-    payload = {
-        "runId": state["runId"],
-        "status": state["status"],
-        "diagnosis": {"rootCause": plan.get("rootCause"),
-                      "evidence": plan.get("evidence", [])},
-        "chosenEffect": state.get("chosenEffect"),
-        "suppressed": state["suppressed"],
-        "dispatches": dispatches or [],
-        "approvals": approvals or [],
-        "actionLog": state.get("dispatchLog", []),
-        "receiptLog": state["receiptLog"],
-        "otlp": render_otlp(state),
-    }
+    if state["status"] == "waiting":
+        payload = {
+            "runId": state["runId"],
+            "status": state["status"],
+            "diagnosis": {"rootCause": plan.get("rootCause"),
+                          "evidence": plan.get("evidence", [])},
+            "dispatches": dispatches or [],
+            "approvals": approvals or []
+        }
+    else:
+        payload = {
+            "runId": state["runId"],
+            "status": state["status"],
+            "diagnosis": {"rootCause": plan.get("rootCause"),
+                          "evidence": plan.get("evidence", [])},
+            "chosenEffect": state.get("chosenEffect"),
+            "suppressed": state["suppressed"],
+            "actionLog": state.get("dispatchLog", []),
+            "receiptLog": state["receiptLog"],
+            "otlp": render_otlp(state)
+        }
     return scrub(payload, state.get("forbidden") or [])
 
 
