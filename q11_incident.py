@@ -1312,7 +1312,9 @@ def build_response(state, dispatches=None, approvals=None):
                       "evidence": plan.get("evidence", [])},
         "chosenEffect": state.get("chosenEffect"),
         "suppressed": state["suppressed"],
-        "dispatches": dispatches or state.get("dispatchLog", []),
+        "dispatches": dispatches if dispatches else [
+            d for d in state.get("dispatchLog", []) if d.get("phase") == "diagnostic"
+        ],
         "approvals": approvals or [],
         "actionLog": state.get("dispatchLog", []),
         "receiptLog": state["receiptLog"],
