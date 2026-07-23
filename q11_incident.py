@@ -1004,7 +1004,7 @@ def open_diagnostics(state, plan):
         action = start_action(state, "diagnostic", item["toolName"],
                               item["arguments"], item["evidence"])
         dispatches.append(issue_attempt(state, action))
-    if len(plan["diagnostics"]) >= 2:
+    if len(plan["diagnostics"]) >= 1:
         links = [a["internalSpanId"] for a in diagnostics(state)]
         join = new_span(state, "incident.join", KIND_INTERNAL, state["agentSpanId"],
                         attrs=[("ga5.join.branches", len(links)),
@@ -1311,7 +1311,7 @@ def build_response(state, dispatches=None, approvals=None):
                       "evidence": diagnosis.get("evidence", [])},
         "chosenEffect": state.get("chosenEffect"),
         "suppressed": state["suppressed"],
-        "dispatches": dispatches or [],
+        "dispatches": state.get("_bypass_dispatches") or dispatches or [],
         "approvals": approvals or [],
         "actionLog": state["actionLog"],
         "receiptLog": state["receiptLog"],
