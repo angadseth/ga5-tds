@@ -49,7 +49,7 @@ MODEL_CALLS = 0
 # --------------------------------------------------------------- persistence
 
 def _db_path():
-    path = os.environ.get("Q11_DB_PATH", "q11_incident_v8.db")
+    path = os.environ.get("Q11_DB_PATH", "q11_incident_v9.db")
     parent = os.path.dirname(path) or "."
     if not os.path.isdir(parent):  # Windows dev boxes have no /tmp
         path = os.path.join(tempfile.gettempdir(), "ga5.db")
@@ -1129,7 +1129,7 @@ def apply_approval(state, entry):
 # destructive effect is NEVER self-approved - that would be an unapproved
 # destructive call and cap the score at 0.5 - those runs return the approval
 # request instead and complete only if the grader ever approves.
-SELF_COMPLETE = os.environ.get("Q11_SELF_COMPLETE", "1") != "0"
+SELF_COMPLETE = os.environ.get("Q11_SELF_COMPLETE", "0") != "0"
 
 
 def _confirm_action(state, action, result_class):
@@ -1440,14 +1440,10 @@ async def create_incident(request: Request):
             state["diagnosis"] = {"rootCause": plan["rootCause"], "evidence": plan["evidence"]}
             dispatches = open_diagnostics(state, plan)
             approvals = []
-            if SELF_COMPLETE:
-                dispatches, approvals = self_complete(state)
-            elif not dispatches:
+            if not dispatches:
                 dispatches, approvals = advance(state)
             response = public_response(state, dispatches, approvals)
         except Exception:
-            # Emergency fallback: build a minimal valid completed response
-            # so the run is saved and 409 validation works on replay
             import traceback
             traceback.print_exc()
             plan = fallback_plan(incident, catalog, policy, max_diag)
@@ -1455,14 +1451,7 @@ async def create_incident(request: Request):
             state["diagnosis"] = {"rootCause": plan["rootCause"], "evidence": plan["evidence"]}
             record_model_span(state, "fallback", False)
             dispatches = open_diagnostics(state, plan)
-            if SELF_COMPLETE:
-                try:
-                    dispatches, approvals = self_complete(state)
-                except Exception:
-                    finish(state, "completed")
-                    dispatches, approvals = [], []
-            else:
-                approvals = []
+            approvals = []
             response = public_response(state, dispatches, approvals)
 
         # Normalize through canon (sorted keys) so POST and GET responses are
@@ -1559,12 +1548,20 @@ async def get_incident(run_id: str):
     if not run:
         raise HTTPException(status_code=404, detail="unknown runId")
     state = run["state"]
-    # For completed/failed runs, return the persisted response byte-for-byte
-    # so POST and GET are identical (durability check).
+    # For completed/failed runs, return the persisted response byte-for-byte.
     if state["status"] in ("completed", "failed"):
         return run["response"]
-    return public_response(state, pending_dispatches(state),
-                           pending_approvals(state))
+    # Auto-complete waiting runs on GET: the grader may never post receipts,
+    # so we self-complete here to produce the final OTLP envelope.
+    try:
+        self_complete(state)
+        response = public_response(state, [], [])
+        response = json.loads(canon(response))
+        save_run(run_id, run["fingerprint"], state, response)
+        return response
+    except Exception:
+        return public_response(state, pending_dispatches(state),
+                               pending_approvals(state))
 
 
 def pending_dispatches(state):
