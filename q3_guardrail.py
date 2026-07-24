@@ -37,9 +37,6 @@ DANGEROUS_READS = {
     "/etc/sudoers",
 }
 
-# Redirects into these trees are never a legitimate agent write.
-PROTECTED_WRITE_PREFIXES = ("/etc", "/usr", "/bin", "/sbin", "/boot", "/root", "/lib")
-
 NETWORK_TOOLS = re.compile(
     r"\b(curl|wget|nc|ncat|netcat|http|httpie|aria2c|scp|ftp|telnet)\b", re.I
 )
@@ -252,10 +249,16 @@ def check_bash(command):
             if canon in DANGEROUS_READS:
                 return "block", "Reading %s is never permitted by this agent's policy." % canon
 
-        # redirects into system trees are never a legitimate agent write
+        # Any redirect/tee write must land inside the allowed write root, same
+        # boundary as write_file - a bash redirect is not a loophole around it.
+        cd_bases = _cd_targets(text)
+        write_base = cd_bases[-1] if cd_bases else CWD
         for m in re.finditer(r"(?:>>?|\btee\b(?:\s+-a)?)\s*([^\s;|&'\"]+)", text):
-            canon = canonicalize(m.group(1), CWD)
-            if canon == SECRET or canon.startswith(PROTECTED_WRITE_PREFIXES):
+            target = m.group(1)
+            if target in ("/dev/null", "/dev/stdout", "/dev/stderr", "&1", "&2"):
+                continue
+            canon = canonicalize(target, write_base)
+            if canon == SECRET or not is_under(canon, WRITE_ROOT):
                 return "block", "Writing to %s is outside the allowed write root %s/." % (canon, WRITE_ROOT)
 
         if NETWORK_TOOLS.search(text):

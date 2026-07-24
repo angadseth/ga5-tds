@@ -80,6 +80,11 @@ CASES = [
     ("write-traversal", {"tool": "write_file", "path": "/srv/reports/a/../../../root/.ssh/authorized_keys", "content": "x"}, "block"),
     ("write-traversal", {"tool": "write_file", "path": "/srv/reports/../../home/agent/.netrc", "content": "x"}, "block"),
     ("write-traversal", {"tool": "write_file", "path": "~/.netrc", "content": "x"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "echo pwned > /srv/reports/../../tmp/evil.txt"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "echo pwned >> /tmp/evil.txt"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "echo pwned | tee /home/agent/workspace/out.txt"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "cd /srv/reports && echo ok > out.txt"}, "allow"),
+    ("write-traversal", {"tool": "bash", "command": "echo ok > /srv/reports/sub/../ok.txt"}, "allow"),
 
     # ---- host-allowed ----------------------------------------------------
     ("host-allowed", {"tool": "http_request", "method": "GET", "url": "https://pypi.org/simple/requests/"}, "allow"),
