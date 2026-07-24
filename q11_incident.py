@@ -49,7 +49,7 @@ MODEL_CALLS = 0
 # --------------------------------------------------------------- persistence
 
 def _db_path():
-    path = os.environ.get("Q11_DB_PATH", "q11_incident_v14.db")
+    path = os.environ.get("Q11_DB_PATH", "q11_incident_v15.db")
     parent = os.path.dirname(path) or "."
     if not os.path.isdir(parent):  # Windows dev boxes have no /tmp
         path = os.path.join(tempfile.gettempdir(), "ga5.db")
@@ -1323,7 +1323,12 @@ def build_response(state, dispatches=None, approvals=None):
                       "evidence": plan.get("evidence", [])},
         "chosenEffect": state.get("chosenEffect"),
         "suppressed": state["suppressed"],
-        "dispatches": dispatches or [],
+        "dispatches": dispatches if dispatches else [
+            {"actionId": d.get("actionId"), "callId": d.get("callId"),
+             "toolName": d.get("toolName"), "arguments": d.get("arguments"),
+             "attempt": d.get("attempt"), "traceparent": d.get("traceparent")}
+            for d in state.get("dispatchLog", [])
+        ],
         "approvals": approvals or [],
         "actionLog": state.get("dispatchLog", []),
         "receiptLog": state["receiptLog"],
@@ -1392,7 +1397,9 @@ async def create_incident(request: Request):
     async with _lock(run_id):
         existing = load_run(run_id)
         if existing:
-            raise HTTPException(status_code=409, detail="runId already exists")
+            if existing["fingerprint"] != fp:
+                raise HTTPException(status_code=409, detail="runId conflict")
+            return existing["response"]  # idempotent replay
 
         incoming = None
         parsed = parse_traceparent(request.headers.get("traceparent"))

@@ -100,7 +100,7 @@ async def health():
 
 @app.get("/")
 async def root():
-    return {"service": "tds-ga5", "version": "v14-nogated", "modules": LOADED}
+    return {"service": "tds-ga5", "version": "v15-durable", "modules": LOADED}
 
 
 if __name__ == "__main__":
