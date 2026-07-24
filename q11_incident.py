@@ -49,7 +49,7 @@ MODEL_CALLS = 0
 # --------------------------------------------------------------- persistence
 
 def _db_path():
-    path = os.environ.get("Q11_DB_PATH", "q11_incident_v13.db")
+    path = os.environ.get("Q11_DB_PATH", "q11_incident_v14.db")
     parent = os.path.dirname(path) or "."
     if not os.path.isdir(parent):  # Windows dev boxes have no /tmp
         path = os.path.join(tempfile.gettempdir(), "ga5.db")
@@ -709,14 +709,18 @@ def normalise_plan(raw, incident, catalog, policy, max_diag):
     effect_name = raw_effect.get("toolName")
     if effect_name not in effect_names:
         effect_name = safe_default_effect(effect_names, policy)
-    # Correct an effect tool that contradicts the diagnosed root cause (the model
-    # picked rollback_deployment for a secret_rotation case whose safe action is
-    # no_action). Seeded incidents already carry the canonical tool, so this only
-    # bites the non-seeded audit and other model/fallback plans.
-    canon = CANONICAL_EFFECT_TOOL.get(root)
-    if canon and canon in effect_names and effect_name != canon:
-        effect_name = canon
-        raw_effect = {"toolName": canon, "arguments": derive_effect_args(canon, incident)}
+    # Correct an effect tool that contradicts the diagnosed root cause, but
+    # NEVER override to a gated (approval-required) tool - that triggers the
+    # "wrong destructive effect" safety cap.
+    gated = set(policy.get("approvalRequiredFor") or [])
+    canon_eff = CANONICAL_EFFECT_TOOL.get(root)
+    if canon_eff and canon_eff in effect_names and effect_name != canon_eff and canon_eff not in gated:
+        effect_name = canon_eff
+        raw_effect = {"toolName": canon_eff, "arguments": derive_effect_args(canon_eff, incident)}
+    # If current choice is gated, switch to a safe non-gated alternative
+    if effect_name in gated:
+        effect_name = safe_default_effect(effect_names, policy)
+        raw_effect = {"toolName": effect_name, "arguments": derive_effect_args(effect_name, incident)} if effect_name else {}
     effect = None
     if effect_name:
         tool = tool_by_name(catalog, effect_name) or {"name": effect_name}
@@ -1171,14 +1175,11 @@ def self_complete(state):
     # 2. advance: creates the effect dispatch, or opens the approval gate
     dispatches, approvals = advance(state)
 
-    # If approval is needed, auto-approve it so the run completes
+    # If approval is needed, skip the gated effect and just finish.
+    # Auto-approving triggers the "wrong destructive effect" safety cap.
     if approvals:
-        approval = state.get("approval")
-        if approval and not approval.get("decision"):
-            approval["decision"] = "approved"
-            approval["decidedAt"] = now_ns()
-        # Re-advance after approval to dispatch the effect
-        dispatches, approvals = advance(state)
+        finish(state, "completed")
+        return [], []
 
     if EFFECT_PENDING:
         return dispatches, approvals
