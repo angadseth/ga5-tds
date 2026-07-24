@@ -49,7 +49,7 @@ MODEL_CALLS = 0
 # --------------------------------------------------------------- persistence
 
 def _db_path():
-    path = os.environ.get("Q11_DB_PATH", "q11_incident_v10.db")
+    path = os.environ.get("Q11_DB_PATH", "q11_incident_v11.db")
     parent = os.path.dirname(path) or "."
     if not os.path.isdir(parent):  # Windows dev boxes have no /tmp
         path = os.path.join(tempfile.gettempdir(), "ga5.db")
@@ -1312,7 +1312,9 @@ def build_response(state, dispatches=None, approvals=None):
                       "evidence": plan.get("evidence", [])},
         "chosenEffect": state.get("chosenEffect"),
         "suppressed": state["suppressed"],
-        "dispatches": dispatches or [],
+        "dispatches": dispatches if dispatches else [
+            d for d in state.get("dispatchLog", []) if d.get("phase") != "effect"
+        ],
         "approvals": approvals or [],
         "actionLog": state.get("dispatchLog", []),
         "receiptLog": state["receiptLog"],
@@ -1381,9 +1383,7 @@ async def create_incident(request: Request):
     async with _lock(run_id):
         existing = load_run(run_id)
         if existing:
-            if existing["fingerprint"] != fp:
-                raise HTTPException(status_code=409, detail="runId already exists with different content")
-            return existing["response"]  # replay: no model, no re-dispatch
+            raise HTTPException(status_code=409, detail="runId already exists")
 
         incoming = None
         parsed = parse_traceparent(request.headers.get("traceparent"))
