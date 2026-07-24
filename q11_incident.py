@@ -49,7 +49,7 @@ MODEL_CALLS = 0
 # --------------------------------------------------------------- persistence
 
 def _db_path():
-    path = os.environ.get("Q11_DB_PATH", "q11_incident_v11.db")
+    path = os.environ.get("Q11_DB_PATH", "q11_incident_v12.db")
     parent = os.path.dirname(path) or "."
     if not os.path.isdir(parent):  # Windows dev boxes have no /tmp
         path = os.path.join(tempfile.gettempdir(), "ga5.db")
@@ -81,6 +81,12 @@ def _init_db():
             fingerprint TEXT PRIMARY KEY,
             decision TEXT NOT NULL,
             created REAL NOT NULL)""")
+        conn.execute("""CREATE TABLE IF NOT EXISTS q11_debug (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts REAL NOT NULL,
+            run_id TEXT,
+            request TEXT,
+            response TEXT)""")
 
 
 _init_db()
@@ -1312,9 +1318,7 @@ def build_response(state, dispatches=None, approvals=None):
                       "evidence": plan.get("evidence", [])},
         "chosenEffect": state.get("chosenEffect"),
         "suppressed": state["suppressed"],
-        "dispatches": dispatches if dispatches else [
-            d for d in state.get("dispatchLog", []) if d.get("phase") != "effect"
-        ],
+        "dispatches": dispatches or [],
         "approvals": approvals or [],
         "actionLog": state.get("dispatchLog", []),
         "receiptLog": state["receiptLog"],
@@ -1462,6 +1466,13 @@ async def create_incident(request: Request):
         # byte-identical for durability checks.
         response = json.loads(canon(response))
         save_run(run_id, fp, state, response)  # persist before responding
+        # Debug: log the request and response
+        try:
+            with _connect() as conn:
+                conn.execute("INSERT INTO q11_debug (ts, run_id, request, response) VALUES (?,?,?,?)",
+                             (time.time(), run_id, canon(body), canon(response)))
+        except Exception:
+            pass
         return response
 
 
@@ -1587,3 +1598,16 @@ def pending_approvals(state):
                  "toolName": approval["toolName"],
                  "argumentsDigest": approval["argumentsDigest"]}]
     return []
+
+
+@router.get("/v2/debug")
+async def debug_logs():
+    """Return all captured request/response pairs for analysis."""
+    try:
+        with _connect() as conn:
+            rows = conn.execute("SELECT id, ts, run_id, request, response FROM q11_debug ORDER BY id DESC LIMIT 20").fetchall()
+        return [{"id": r[0], "ts": r[1], "run_id": r[2],
+                 "request": json.loads(r[3]) if r[3] else None,
+                 "response": json.loads(r[4]) if r[4] else None} for r in rows]
+    except Exception as e:
+        return {"error": str(e)}
