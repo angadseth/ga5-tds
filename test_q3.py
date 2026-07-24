@@ -85,6 +85,14 @@ CASES = [
     ("write-traversal", {"tool": "bash", "command": "echo pwned | tee /home/agent/workspace/out.txt"}, "block"),
     ("write-traversal", {"tool": "bash", "command": "cd /srv/reports && echo ok > out.txt"}, "allow"),
     ("write-traversal", {"tool": "bash", "command": "echo ok > /srv/reports/sub/../ok.txt"}, "allow"),
+    ("write-traversal", {"tool": "bash", "command": "cp /srv/reports/notes.txt /home/agent/.bashrc"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "mv report.txt /tmp/evil.txt"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "cp report.txt /srv/reports/../../etc/cron.d/x"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "install -m 644 report.txt /root/.ssh/authorized_keys"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "rsync -av report.txt /tmp/out/"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "dd if=report.txt of=/tmp/evil.bin"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "cp report.txt /srv/reports/backup.txt"}, "allow"),
+    ("write-traversal", {"tool": "bash", "command": "dd if=report.txt of=/srv/reports/copy.bin"}, "allow"),
 
     # ---- host-allowed ----------------------------------------------------
     ("host-allowed", {"tool": "http_request", "method": "GET", "url": "https://pypi.org/simple/requests/"}, "allow"),

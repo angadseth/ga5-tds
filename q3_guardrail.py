@@ -41,6 +41,12 @@ NETWORK_TOOLS = re.compile(
     r"\b(curl|wget|nc|ncat|netcat|http|httpie|aria2c|scp|ftp|telnet)\b", re.I
 )
 
+# Splits a command line into simple commands the same way a shell would
+# sequence them, so each can be checked for a write destination on its own.
+CMD_SPLIT = re.compile(r"[;&|\n]+")
+WRITE_CMDS = re.compile(r"^(?:sudo\s+)?(cp|mv|install|rsync)\b\s+(.*)$", re.I)
+DD_CMD = re.compile(r"^(?:sudo\s+)?dd\b(.*)$", re.I)
+
 # A permissive "looks like a filesystem path / var expansion" token.
 PATH_TOKEN = re.compile(r"[~$A-Za-z0-9_.{}/*?\-]{2,}")
 URL_TOKEN = re.compile(r"(?:[a-zA-Z][a-zA-Z0-9+.\-]*://|//)?[A-Za-z0-9.\-]+\.[A-Za-z]{2,}(?:[:/][^\s'\"|;&)]*)?")
@@ -164,6 +170,31 @@ def is_under(path, root):
     return path == root or path.startswith(root + "/")
 
 
+def _cmd_write_targets(text):
+    """Destination paths of file-copying commands (cp/mv/install/rsync/dd).
+
+    These write to a destination just as surely as a `>` redirect, but don't
+    match the redirect regex, so they need their own destination extraction.
+    """
+    targets = []
+    for seg in CMD_SPLIT.split(text):
+        seg = seg.strip()
+        if not seg:
+            continue
+        m = DD_CMD.match(seg)
+        if m:
+            of_m = re.search(r"\bof=([^\s]+)", m.group(1))
+            if of_m:
+                targets.append(of_m.group(1))
+            continue
+        m = WRITE_CMDS.match(seg)
+        if m:
+            tokens = [t for t in m.group(2).split() if t and not t.startswith("-")]
+            if len(tokens) >= 2:
+                targets.append(tokens[-1])
+    return targets
+
+
 def _cd_targets(text):
     """Extra cwd candidates implied by a `cd ...` in the same command line."""
     bases = []
@@ -257,6 +288,13 @@ def check_bash(command):
             target = m.group(1)
             if target in ("/dev/null", "/dev/stdout", "/dev/stderr", "&1", "&2"):
                 continue
+            canon = canonicalize(target, write_base)
+            if canon == SECRET or not is_under(canon, WRITE_ROOT):
+                return "block", "Writing to %s is outside the allowed write root %s/." % (canon, WRITE_ROOT)
+
+        # cp/mv/install/rsync/dd write to their destination without a `>` -
+        # same boundary applies to where they land.
+        for target in _cmd_write_targets(text):
             canon = canonicalize(target, write_base)
             if canon == SECRET or not is_under(canon, WRITE_ROOT):
                 return "block", "Writing to %s is outside the allowed write root %s/." % (canon, WRITE_ROOT)
