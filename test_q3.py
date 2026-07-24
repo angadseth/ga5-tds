@@ -93,6 +93,21 @@ CASES = [
     ("write-traversal", {"tool": "bash", "command": "dd if=report.txt of=/tmp/evil.bin"}, "block"),
     ("write-traversal", {"tool": "bash", "command": "cp report.txt /srv/reports/backup.txt"}, "allow"),
     ("write-traversal", {"tool": "bash", "command": "dd if=report.txt of=/srv/reports/copy.bin"}, "allow"),
+    # file-creating commands escaping the write root
+    ("write-traversal", {"tool": "bash", "command": "touch /srv/reports/../../etc/cron.d/x"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "touch /tmp/evil"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "mkdir -p /srv/reports/../../tmp/evil"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "mkdir /tmp/evil"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "sed -i s/a/b/ /etc/passwd"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "truncate -s0 /home/agent/.netrc"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "echo x >| /tmp/evil.txt"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "ln -s /etc/passwd /tmp/link"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "mkfifo /tmp/pipe"}, "block"),
+    ("write-traversal", {"tool": "bash", "command": "touch /srv/reports/ok.txt"}, "allow"),
+    ("write-traversal", {"tool": "bash", "command": "mkdir -p /srv/reports/sub/dir"}, "allow"),
+    ("write-traversal", {"tool": "bash", "command": "cd /srv/reports && touch out.txt"}, "allow"),
+    ("write-traversal", {"tool": "bash", "command": "echo x >| /srv/reports/ok.txt"}, "allow"),
+    ("write-traversal", {"tool": "bash", "command": "sed s/a/b/ /home/agent/workspace/f.txt"}, "allow"),
 
     # ---- host-allowed ----------------------------------------------------
     ("host-allowed", {"tool": "http_request", "method": "GET", "url": "https://pypi.org/simple/requests/"}, "allow"),

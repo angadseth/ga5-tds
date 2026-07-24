@@ -44,8 +44,15 @@ NETWORK_TOOLS = re.compile(
 # Splits a command line into simple commands the same way a shell would
 # sequence them, so each can be checked for a write destination on its own.
 CMD_SPLIT = re.compile(r"[;&|\n]+")
-WRITE_CMDS = re.compile(r"^(?:sudo\s+)?(cp|mv|install|rsync)\b\s+(.*)$", re.I)
+# Copy-style commands whose LAST positional arg is the write destination
+# (sources before it are only reads and stay allowed).
+DEST_LAST_CMDS = re.compile(r"^(?:sudo\s+)?(cp|mv|install|rsync|ln)\b\s+(.*)$", re.I)
+# Commands where EVERY positional arg is a path being created / written.
+DEST_ALL_CMDS = re.compile(r"^(?:sudo\s+)?(touch|mkdir|truncate|mkfifo|mknod)\b\s+(.*)$", re.I)
 DD_CMD = re.compile(r"^(?:sudo\s+)?dd\b(.*)$", re.I)
+SED_INPLACE = re.compile(r"^(?:sudo\s+)?sed\b(.*)$", re.I)
+# Redirect operators (>, >>, >|) and tee — capture the file that follows.
+REDIRECT = re.compile(r"(?:>>?\|?|\btee\b(?:\s+-a)?)\s*([^\s;|&'\"]+)")
 
 # A permissive "looks like a filesystem path / var expansion" token.
 PATH_TOKEN = re.compile(r"[~$A-Za-z0-9_.{}/*?\-]{2,}")
@@ -170,28 +177,57 @@ def is_under(path, root):
     return path == root or path.startswith(root + "/")
 
 
-def _cmd_write_targets(text):
-    """Destination paths of file-copying commands (cp/mv/install/rsync/dd).
+def _bash_write_targets(text):
+    """Every path a bash command line would WRITE to (create/modify/truncate).
 
-    These write to a destination just as surely as a `>` redirect, but don't
-    match the redirect regex, so they need their own destination extraction.
+    Covers redirects (>, >>, >|, tee), copy-style commands (cp/mv/install/
+    rsync/ln → last arg), file-creators (touch/mkdir/truncate/mkfifo/mknod →
+    all args), dd (of=), and sed -i (its file args). Sources/reads are never
+    returned, so a `cp secret /srv/reports/x` still lets the read of the
+    source through - only the destination is judged against the write root.
     """
     targets = []
+
+    # Redirects apply to the whole line regardless of the leading command.
+    for m in REDIRECT.finditer(text):
+        tgt = m.group(1)
+        if tgt not in ("/dev/null", "/dev/stdout", "/dev/stderr", "&1", "&2"):
+            targets.append(tgt)
+
     for seg in CMD_SPLIT.split(text):
         seg = seg.strip()
         if not seg:
             continue
+
         m = DD_CMD.match(seg)
         if m:
             of_m = re.search(r"\bof=([^\s]+)", m.group(1))
             if of_m:
                 targets.append(of_m.group(1))
             continue
-        m = WRITE_CMDS.match(seg)
+
+        m = SED_INPLACE.match(seg)
+        if m and re.search(r"(?:^|\s)(-i\b|-i\S*|--in-place)", m.group(1)):
+            # In-place edit: the last non-option token is the file rewritten.
+            toks = [t for t in m.group(1).split() if t and not t.startswith("-")]
+            if toks:
+                targets.append(toks[-1])
+            continue
+
+        m = DEST_LAST_CMDS.match(seg)
         if m:
-            tokens = [t for t in m.group(2).split() if t and not t.startswith("-")]
-            if len(tokens) >= 2:
-                targets.append(tokens[-1])
+            toks = [t for t in m.group(2).split() if t and not t.startswith("-")]
+            if len(toks) >= 2:
+                targets.append(toks[-1])
+            continue
+
+        m = DEST_ALL_CMDS.match(seg)
+        if m:
+            for tok in m.group(2).split():
+                if tok and not tok.startswith("-"):
+                    targets.append(tok)
+            continue
+
     return targets
 
 
@@ -280,21 +316,12 @@ def check_bash(command):
             if canon in DANGEROUS_READS:
                 return "block", "Reading %s is never permitted by this agent's policy." % canon
 
-        # Any redirect/tee write must land inside the allowed write root, same
-        # boundary as write_file - a bash redirect is not a loophole around it.
+        # Every write destination on the line - redirects, tee, cp/mv/ln,
+        # touch/mkdir/truncate, dd, sed -i - must land inside the allowed
+        # write root. A bash write is not a loophole around write_file.
         cd_bases = _cd_targets(text)
         write_base = cd_bases[-1] if cd_bases else CWD
-        for m in re.finditer(r"(?:>>?|\btee\b(?:\s+-a)?)\s*([^\s;|&'\"]+)", text):
-            target = m.group(1)
-            if target in ("/dev/null", "/dev/stdout", "/dev/stderr", "&1", "&2"):
-                continue
-            canon = canonicalize(target, write_base)
-            if canon == SECRET or not is_under(canon, WRITE_ROOT):
-                return "block", "Writing to %s is outside the allowed write root %s/." % (canon, WRITE_ROOT)
-
-        # cp/mv/install/rsync/dd write to their destination without a `>` -
-        # same boundary applies to where they land.
-        for target in _cmd_write_targets(text):
+        for target in _bash_write_targets(text):
             canon = canonicalize(target, write_base)
             if canon == SECRET or not is_under(canon, WRITE_ROOT):
                 return "block", "Writing to %s is outside the allowed write root %s/." % (canon, WRITE_ROOT)
