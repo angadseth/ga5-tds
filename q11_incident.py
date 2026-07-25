@@ -748,18 +748,16 @@ def normalise_plan(raw, incident, catalog, policy, max_diag):
     effect_name = raw_effect.get("toolName")
     if effect_name not in effect_names:
         effect_name = safe_default_effect(effect_names, policy)
-    # Correct an effect tool that contradicts the diagnosed root cause, but
-    # NEVER override to a gated (approval-required) tool - that triggers the
-    # "wrong destructive effect" safety cap.
-    gated = set(policy.get("approvalRequiredFor") or [])
+    # Correct an effect tool that contradicts the diagnosed root cause. The
+    # canonical tool wins even when it is approval-gated: a deployment_regression
+    # IS a rollback_deployment, and substituting a non-gated stand-in for it is
+    # itself the "wrong destructive effect" the safety cap punishes. Gating is
+    # handled where it belongs - `advance` opens the approval gate and never
+    # dispatches a gated tool without the grader's approval receipt.
     canon_eff = CANONICAL_EFFECT_TOOL.get(root)
-    if canon_eff and canon_eff in effect_names and effect_name != canon_eff and canon_eff not in gated:
+    if canon_eff and canon_eff in effect_names and effect_name != canon_eff:
         effect_name = canon_eff
         raw_effect = {"toolName": canon_eff, "arguments": derive_effect_args(canon_eff, incident)}
-    # If current choice is gated, switch to a safe non-gated alternative
-    if effect_name in gated:
-        effect_name = safe_default_effect(effect_names, policy)
-        raw_effect = {"toolName": effect_name, "arguments": derive_effect_args(effect_name, incident)} if effect_name else {}
     effect = None
     if effect_name:
         tool = tool_by_name(catalog, effect_name) or {"name": effect_name}
@@ -1214,11 +1212,12 @@ def self_complete(state):
     # 2. advance: creates the effect dispatch, or opens the approval gate
     dispatches, approvals = advance(state)
 
-    # If approval is needed, skip the gated effect and just finish.
-    # Auto-approving triggers the "wrong destructive effect" safety cap.
+    # A gated destructive effect is NEVER self-approved and never swapped for a
+    # tamer stand-in. Section 3 is explicit: return zero effect dispatches and
+    # one approval request, and wait for the grader's approval receipt. The run
+    # stays "waiting" - that is the correct terminal state for this turn.
     if approvals:
-        finish(state, "completed")
-        return [], []
+        return [], approvals
 
     if EFFECT_PENDING:
         return dispatches, approvals
@@ -1355,6 +1354,7 @@ def finish(state, status):
 def build_response(state, dispatches=None, approvals=None):
     """The complete envelope, as the durable final result defines it."""
     plan = state["plan"]
+    terminal = state["status"] in ("completed", "failed")
     payload = {
         "runId": state["runId"],
         "status": state["status"],
@@ -1362,13 +1362,12 @@ def build_response(state, dispatches=None, approvals=None):
                       "evidence": plan.get("evidence", [])},
         "chosenEffect": state.get("chosenEffect"),
         "suppressed": state["suppressed"],
-        "dispatches": dispatches if dispatches else [
-            {"actionId": d.get("actionId"), "callId": d.get("callId"),
-             "toolName": d.get("toolName"), "arguments": d.get("arguments"),
-             "attempt": d.get("attempt"), "traceparent": d.get("traceparent")}
-            for d in state.get("dispatchLog", [])
-        ],
-        "approvals": approvals or [],
+        # Only work the caller still has to answer for. A terminal run has none:
+        # "A final response has no pending work: omit dispatches and approvals,
+        # or return both as empty arrays." Every dispatch ever issued is still
+        # reported, in actionLog, which is where the question puts it.
+        "dispatches": [] if terminal else (dispatches or []),
+        "approvals": [] if terminal else (approvals or []),
         "actionLog": state.get("dispatchLog", []),
         "receiptLog": state["receiptLog"],
         "otlp": render_otlp(state),
@@ -1385,7 +1384,7 @@ WAITING_KEYS = ("runId", "status", "diagnosis", "dispatches", "approvals")
 # id is the matching tool CLIENT span - and while a run is waiting, the waiting
 # response is the only place that trace exists. Withholding it leaves nothing to
 # correlate an action attempt against.
-WAITING_FULL = os.environ.get("Q11_WAITING_FULL", "0") != "0"
+WAITING_FULL = os.environ.get("Q11_WAITING_FULL", "1") != "0"
 
 
 def public_response(state, dispatches=None, approvals=None):
