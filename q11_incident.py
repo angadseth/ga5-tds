@@ -1178,6 +1178,20 @@ def apply_approval(state, entry):
 # request instead and complete only if the grader ever approves.
 SELF_COMPLETE = os.environ.get("Q11_SELF_COMPLETE", "1") != "0"
 
+# A differential probe. The seven scenarios are graded per category out of seven,
+# so serving one hypothesis to some incidents and the opposite to the rest
+# attributes a category move to a mode in a single Check instead of two. The two
+# approval-gated root causes are excluded: they answer with the approval turn
+# either way, so they carry no signal. Set Q11_SPLIT=1 to arm it.
+SPLIT = os.environ.get("Q11_SPLIT", "0") != "0"
+SPLIT_WAITING = ("database_connection_exhaustion", "traffic_capacity_exhaustion")
+
+
+def self_completing(root_cause):
+    if SPLIT and root_cause in SPLIT_WAITING:
+        return False
+    return SELF_COMPLETE
+
 
 def _confirm_action(state, action, result_class):
     """Synthesize a successful (200) outcome for one pending action, exactly as
@@ -1506,7 +1520,7 @@ async def create_incident(request: Request):
             state["diagnosis"] = {"rootCause": plan["rootCause"], "evidence": plan["evidence"]}
             dispatches = open_diagnostics(state, plan)
             approvals = []
-            if SELF_COMPLETE:
+            if self_completing(plan["rootCause"]):
                 dispatches, approvals = self_complete(state)
             elif not dispatches:
                 dispatches, approvals = advance(state)
