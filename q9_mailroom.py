@@ -101,6 +101,10 @@ _conn.executescript(
         commit_key TEXT PRIMARY KEY,
         response TEXT
     );
+    CREATE TABLE IF NOT EXISTS q9_v3_terminal (
+        eval_id TEXT PRIMARY KEY,
+        commit_key TEXT
+    );
     CREATE TABLE IF NOT EXISTS q9_v3_effects (
         effect_key TEXT PRIMARY KEY,
         outcome TEXT
@@ -1107,6 +1111,17 @@ async def do_commit(body):
     if hit is not None:
         return json.loads(hit[1])  # replay: no repeated tool effect
 
+    # A committed evaluation is terminal. An identical replay is served above;
+    # anything else - a different receipt set, a declined action returning as
+    # accepted - is a conflicting second commit, not a retry, and must not
+    # re-run effects or rewrite the outcome.
+    committed = _get("q9_v3_terminal", "eval_id", eval_id)
+    if committed is not None and committed[1] != commit_key:
+        raise HTTPException(
+            status_code=409,
+            detail="evaluation %s is already committed with a different receipt set"
+                   % eval_id)
+
     # Atomic: every receipt is validated against its persisted proposal before
     # a single effect is applied, so a batch with one bad receipt changes nothing.
     proposals = json.loads(row[2])["proposals"]
@@ -1140,4 +1155,6 @@ async def do_commit(body):
     }
     _put("INSERT OR REPLACE INTO q9_v3_commits VALUES (?,?)",
          (commit_key, json.dumps(response, ensure_ascii=False)))
+    _put("INSERT OR IGNORE INTO q9_v3_terminal VALUES (?,?)",
+         (eval_id, commit_key))
     return response
