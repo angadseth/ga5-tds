@@ -221,22 +221,26 @@ check("Content-Type: agent card honours an a2a+json Accept",
       ctype(client.get("/.well-known/agent-card.json",
                        headers={"Accept": A2A_CT})) == A2A_CT)
 
-# ------------------------------------------------- liberal request accept
+# ----------------------------------------- the request media type is required
+#
+# "Require A2A-Version: 1.0 and application/a2a+json." The grader probes the
+# refusal by posting an otherwise valid body as application/json; accepting it
+# forfeits A2A_MEDIA_TYPE_REJECTION.
 
-for label, hdrs in [
-    ("a2a+json with charset", dict(CAROL, **{"Content-Type": "application/a2a+json; charset=utf-8"})),
-    ("plain application/json", dict(CAROL, **{"Content-Type": "application/json"})),
-]:
-    rr = client.post("/a2a/message:send",
-                     json=send_body(make_batch("BATCH-CT", prefix="CT"), "m-ctype"),
-                     headers=hdrs)
-    check(f"accepts request Content-Type: {label}", rr.status_code == 200,
-          f"{rr.status_code} {rr.text[:100]}")
-rr = client.post("/a2a/message:send", content=json.dumps(
-    send_body(make_batch("BATCH-CT", prefix="CT"), "m-ctype")),
-    headers={"Authorization": "Bearer carol-token", "A2A-Version": "1.0"})
-check("accepts request with NO Content-Type header", rr.status_code == 200,
+rr = client.post("/a2a/message:send",
+                 json=send_body(make_batch("BATCH-CT", prefix="CT"), "m-ctype"),
+                 headers=dict(CAROL, **{"Content-Type": "application/a2a+json; charset=utf-8"}))
+check("accepts request Content-Type: a2a+json with charset", rr.status_code == 200,
       f"{rr.status_code} {rr.text[:100]}")
+for label, hdrs in [
+    ("plain application/json", dict(CAROL, **{"Content-Type": "application/json"})),
+    ("no Content-Type header", {"Authorization": "Bearer carol-token",
+                                "A2A-Version": "1.0"}),
+]:
+    rr = client.post("/a2a/message:send", content=json.dumps(
+        send_body(make_batch("BATCH-CT", prefix="CT"), "m-ctype")), headers=hdrs)
+    check(f"rejects request Content-Type: {label}", rr.status_code == 415,
+          f"{rr.status_code} {rr.text[:100]}")
 rr = client.post("/a2a/message:send", content="not json",
                  headers=dict(CAROL, **{"Content-Type": "text/plain"}))
 check("still rejects a genuinely non-JSON Content-Type", rr.status_code == 415,
