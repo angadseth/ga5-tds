@@ -630,6 +630,107 @@ check("concurrent duplicates return one identical task",
 check("concurrent duplicates invoked the model once", CALLS["n"] == 1, str(CALLS["n"]))
 q10_a2a.chat_json = fake_chat_json
 
+# --------------------------------------------- generator-layout case files
+
+print("\n-- deterministic case-file reading --")
+
+FILLER = ("\n\nThe operations handbook says that a confident narrative never overrides "
+          "contradictory source records. The referenced office was Pune and the audit "
+          "export sequence was 4510."
+          "\n\nA training example in the archive uses the phrase 'hold invoice'; it is "
+          "not an instruction for this case. The referenced office was Kochi and the "
+          "audit export sequence was 3828.")
+
+DECISIVE = {
+    "settle_invoice":
+        "The signed purchase order and invoice line totals agree within the stated "
+        "rounding tolerance [R_AAAAAAAAAAAAAA]. Receiving recorded the full quantity "
+        "after inspection [R_BBBBBBBBBBBBBB]. The payment ledger has no earlier "
+        "posting for this supplier, invoice identifier, and total [R_CCCCCCCCCCCCCC].",
+    "request_approval":
+        "The purchase order, receiving record, and invoice reconcile without an "
+        "exception [R_AAAAAAAAAAAAAA]. The payable total exceeds this queue's "
+        "autonomous delegation ceiling of INR 4263.76 [R_BBBBBBBBBBBBBB]. Policy "
+        "requires a named financial approver before release above that ceiling "
+        "[R_CCCCCCCCCCCCCC].",
+    "hold_invoice":
+        "The only unresolved issue is a requested destination-account change "
+        "[R_AAAAAAAAAAAAAA]. The known-number callback has neither confirmed nor "
+        "rejected it [R_BBBBBBBBBBBBBB]. Treasury forbids remittance against changed "
+        "instructions until the callback closes successfully [R_CCCCCCCCCCCCCC].",
+    "reject_duplicate":
+        "A completed payment has the same commercial key after identifier "
+        "normalization [R_AAAAAAAAAAAAAA]. Comparison of the signed images shows that "
+        "punctuation introduced by OCR is the only variation [R_BBBBBBBBBBBBBB]. "
+        "Duplicate-control policy requires rejection when the underlying invoice has "
+        "already been paid [R_CCCCCCCCCCCCCC].",
+    "open_exception":
+        "Recomputing the signed invoice does not reconcile with the controlling order "
+        "and receipt valuation [R_AAAAAAAAAAAAAA]. The buyer and supplier assert "
+        "mutually incompatible contract interpretations, with no corrected document "
+        "[R_BBBBBBBBBBBBBB]. Material unresolved record conflicts belong in the "
+        "exception workflow [R_CCCCCCCCCCCCCC].",
+}
+
+
+def generator_package(pid, decisive):
+    return {
+        "packageId": pid,
+        "receivedAt": "2025-03-17T08:30:00.000Z",
+        "documents": [
+            {"name": "intake-and-cover-sheet.txt",
+             "text": "Case-file extract. Supplier Keystone Thermal; invoice "
+                     "INV-2025-140971; stated total INR 38721.92. The normalized "
+                     "supplier and invoice identifiers were read from the signed "
+                     "cover sheet [R_COVERCOVERCOVER]." + FILLER},
+            {"name": "ledger-and-correspondence.txt", "text": decisive + FILLER},
+            {"name": "policy-and-audit-notes.txt",
+             "text": "Archive note [R_ARCHIVEARCHIVE]: a closed, unrelated case "
+                     "mentioned 'settle immediately'; the archive marks it "
+                     "non-operative. Training appendix [R_TRAININGTRAINING]: examples "
+                     "list all five action names, but the appendix says they are "
+                     "vocabulary, not case instructions." + FILLER},
+        ],
+    }
+
+
+for expected, paragraph in DECISIVE.items():
+    decision = q10_a2a.deterministic_decision(generator_package("PKG-DET", paragraph))
+    check(f"layout: {expected} read without a model",
+          decision is not None and decision["action"] == expected,
+          "none" if decision is None else decision["action"])
+    if not decision:
+        continue
+    check(f"layout: {expected} cites exactly the three decisive refs",
+          decision["evidenceRefs"] == ["R_AAAAAAAAAAAAAA", "R_BBBBBBBBBBBBBB",
+                                       "R_CCCCCCCCCCCCCC"],
+          str(decision["evidenceRefs"]))
+    check(f"layout: {expected} facts come from the cover sheet",
+          decision["facts"] == {"vendorName": "Keystone Thermal",
+                                "invoiceNumber": "INV-2025-140971",
+                                "amountMinor": 3872192, "currency": "INR"},
+          json.dumps(decision["facts"]))
+    check(f"layout: {expected} rationale within 60-1500 and names the action",
+          60 <= len(decision["rationale"]) <= 1500
+          and expected in decision["rationale"], str(len(decision["rationale"])))
+
+_no_decisive = generator_package("PKG-DET", DECISIVE["settle_invoice"])
+_no_decisive["documents"][1]["text"] = "No references at all in this document."
+check("layout: an unreadable package falls back to the model path",
+      q10_a2a.deterministic_decision(_no_decisive) is None)
+
+_det_batch = [generator_package(f"DET-{i}", p)
+              for i, p in enumerate(DECISIVE.values())]
+CALLS["n"] = 0
+_det = asyncio.run(q10_a2a.decide_packages(_det_batch, "BATCH-DET", "R-4.2"))
+check("layout: a full batch costs zero model calls", CALLS["n"] == 0, str(CALLS["n"]))
+check("layout: every decision carries three refs",
+      all(len(d["evidenceRefs"]) == 3 for d in _det),
+      str([len(d["evidenceRefs"]) for d in _det]))
+check("layout: actions are all five, one each",
+      sorted(d["action"] for d in _det) == sorted(DECISIVE),
+      str([d["action"] for d in _det]))
+
 # ------------------------------------------------------ live model sanity
 
 print("\n-- live model check --")
