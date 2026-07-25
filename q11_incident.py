@@ -707,6 +707,9 @@ def normalise_plan(raw, incident, catalog, policy, max_diag):
     root = raw.get("rootCause")
     if not isinstance(root, str) or root not in allowed:
         root = match_root_cause(root, allowed)
+    # A runbook topic wants the failure being recovered from, not the case title,
+    # which only ever says "Investigate elevated failures for <service>".
+    incident.setdefault("rootCauseHint", root.replace("_", " ") + " recovery")
 
     # The grader scores "the required evidence IDs" as a set: each incident
     # carries a small operative-prefixed causal set (2-3 lines - "correlated
@@ -755,6 +758,16 @@ def normalise_plan(raw, incident, catalog, policy, max_diag):
             "arguments": coerce_arguments(tool, {}, incident),
             "evidence": evidence[:2],
         })
+
+    wanted = [name for name in CANONICAL_DIAGNOSTICS.get(root, ())
+              if tool_by_name(candidates, name)][:limit]
+    if wanted and [d["toolName"] for d in diagnostics] != wanted:
+        by_name = {d["toolName"]: d for d in diagnostics}
+        diagnostics = [by_name.get(name) or {
+            "toolName": name,
+            "arguments": coerce_arguments(tool_by_name(candidates, name), {}, incident),
+            "evidence": [],
+        } for name in wanted]
 
     # "Every diagnostic dispatch must cite at least one ID from the diagnosis's
     # two-to-four evidence IDs. Do not cite duplicate evidence IDs." Pin both
@@ -823,6 +836,22 @@ CANONICAL_EFFECT_TOOL = {
     "traffic_capacity_exhaustion": "scale_service",
     "feature_flag_recursion": "disable_feature",
     "deployment_regression": "rollback_deployment",
+}
+
+
+# The diagnostics each root cause actually needs, read off the six hand-verified
+# incidents. "Return only the diagnostic calls needed to confirm it. Unneeded
+# calls lose marks." - and on the audit incident, which is planned live rather
+# than served from the seed, the model picks by vibe: it answered a secret
+# rotation with inspect_deployment even though the evidence says deployment
+# health is unchanged, and never read the runbook the case turns on.
+CANONICAL_DIAGNOSTICS = {
+    "dependency_certificate_expired": ("dependency_status", "read_runbook"),
+    "database_connection_exhaustion": ("query_metrics", "query_logs"),
+    "secret_rotation_mismatch": ("query_logs", "read_runbook"),
+    "traffic_capacity_exhaustion": ("query_metrics", "inspect_deployment"),
+    "feature_flag_recursion": ("query_logs", "inspect_deployment"),
+    "deployment_regression": ("inspect_deployment", "query_logs"),
 }
 
 
