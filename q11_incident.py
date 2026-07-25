@@ -529,17 +529,6 @@ def coerce_arguments(tool, raw_args, incident):
             args[key] = bool(value)
         elif kind == "string" and not isinstance(value, str):
             args[key] = str(value)
-        elif not kind:
-            # Schemaless required key: infer from the key's own name so the
-            # model cannot hand back "30m" for a field called windowMinutes.
-            low = key.lower()
-            if "minute" in low and not isinstance(value, bool):
-                digits = re.findall(r"\d+", str(value))
-                args[key] = int(digits[0]) if digits else 30
-            elif low in ("query", "search", "filter", "q") and (
-                    not isinstance(value, str) or not value.strip()
-                    or value.strip() == (incident.get("service") or "").strip()):
-                args[key] = search_phrase(incident)
 
     # a wrong destructive target caps the score, so pin service-shaped fields
     service = (incident.get("service") or "").strip()
@@ -573,37 +562,9 @@ def default_value(spec, key, incident):
         return incident.get("service") or "unknown"
     if "incident" in low:
         return incident.get("incidentId") or ""
-    # These tools declare `required` but no `properties`, so there is no type to
-    # read: a key that names its own unit is a number, not a duration string.
-    if "minute" in low:
-        return 30
     if "window" in low or "range" in low or "period" in low:
         return "30m"
-    # A search box wants the symptom, not the service id - the service is
-    # already carried by its own argument.
-    if low in ("query", "search", "filter", "q", "pattern", "expression"):
-        return search_phrase(incident)
-    if "topic" in low or "runbook" in low:
-        return (incident.get("rootCauseHint")
-                or (incident.get("title") or "").strip()[:120]
-                or "incident recovery")
-    if "depend" in low or "upstream" in low:
-        found = re.search(r"\bdep_[A-Za-z0-9]+\b", incident.get("transcript") or "")
-        return found.group(0) if found else (incident.get("service") or "")
     return incident.get("service") or ""
-
-
-def search_phrase(incident):
-    """A short, incident-specific log query built from the case, never a secret."""
-    title = (incident.get("title") or "").strip()
-    for lead in ("Investigate elevated failures for", "Investigate", "Incident:"):
-        if title.startswith(lead):
-            title = title[len(lead):].strip()
-            break
-    service = (incident.get("service") or "").strip()
-    if title and title != service:
-        return title[:120]
-    return "error OR timeout OR failure"
 
 
 def tool_by_name(catalog, name):
