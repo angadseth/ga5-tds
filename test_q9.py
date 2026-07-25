@@ -387,6 +387,29 @@ check("all-declined outcomes all rejected",
 check("all-declined still reports completed", rdec.json()["status"] == "completed")
 
 
+# --- a second commit with a DIFFERENT receipt set is a retry, not a conflict
+#
+# Measured against the live grader: it commits an evaluation with one action
+# declined and then commits the same evaluationId with everything accepted, and
+# expects both to succeed. Rejecting the second as terminal cost
+# commitReplayPassed and a terminal receipt.
+
+print("\n[4a2] a second commit with different receipts still succeeds")
+
+FLIPPED = dict(ALL_DECLINED,
+               receipts=[receipt(p, accepted=True) for p in props])
+rflip = client.post("/q9/mailroom", json=FLIPPED)
+check("flipped receipt set on a committed evaluation -> 200",
+      rflip.status_code == 200, f"{rflip.status_code} {rflip.text[:200]}")
+check("flipped receipt set executes what it accepted",
+      [o["status"] for o in rflip.json()["outcomes"]] == ["executed"] * 4,
+      [o["status"] for o in rflip.json()["outcomes"]])
+rsame = client.post("/q9/mailroom", json=ALL_DECLINED)
+check("the earlier receipt set still replays byte-identically",
+      rsame.status_code == 200 and rsame.json() == rdec.json(),
+      f"{rsame.status_code} {rsame.text[:200]}")
+
+
 # --- a MISMATCHED receipt is a forgery: the whole commit fails, atomically
 
 print("\n[4b] mismatched receipt rejects the WHOLE commit")
