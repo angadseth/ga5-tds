@@ -42,7 +42,27 @@ def _key():
     that a `setx` refresh cannot reach. On Render no .env exists, so the real
     environment variable is used.
     """
-    return "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6IjI0ZjIwMDQxNDFAZHMuc3R1ZHkuaWl0bS5hYy5pbiIsImlhdCI6MTc4NDU0OTU4MiwiaXNzIjoiaHR0cHM6Ly9haXBpcGUub3JnIiwiYXVkIjoiYWlwaXBlLWFwaSIsImV4cCI6MTc4NTE1NDM4Mn0.yXH_nwmMz3X3Rjs5jhJAu3GtDOy_a3PyGAIdIE_ghX4"
+    for name in ("LLM_API_KEY", "AIPIPE_TOKEN"):
+        value = _dotenv().get(name) or os.environ.get(name)
+        if value and value.strip():
+            return value.strip()
+    return ""
+
+
+def _dotenv():
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    values = {}
+    try:
+        with open(path, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, _, value = line.partition("=")
+                values[key.strip()] = value.strip().strip('"').strip("'")
+    except OSError:
+        pass
+    return values
 
 
 API_KEY = _key()
