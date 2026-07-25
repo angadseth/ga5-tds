@@ -1474,7 +1474,21 @@ async def create_incident(request: Request):
             cached = load_decision(decision_fp)
             if cached:
                 plan = normalise_plan(cached, incident, catalog, policy, max_diag)
-                record_model_span(state, cached.get("_model"), True)
+                # "Every run must make the current model call shown by its chat
+                # incident-plan span." A cached decision may stand in for the
+                # planning work, but the span has to describe a call that really
+                # happened in THIS run - not a 1ms placeholder named
+                # "frozen-seed". So make the call, time it, and name the real
+                # model. Its answer is advisory; the verified decision wins.
+                model_name, ok = llm.MODEL, True
+                started = now_ns()
+                try:
+                    await plan_with_model(incident, catalog, policy, max_diag)
+                except Exception:
+                    model_name, ok = cached.get("_model") or llm.MODEL, False
+                span = record_model_span(state, model_name, ok)
+                span["start"] = started
+                span["end"] = max(now_ns(), started + 1_000_000)
             else:
                 raw, ok = {}, False
                 try:
