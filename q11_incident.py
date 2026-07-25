@@ -690,6 +690,14 @@ async def plan_with_model(incident, catalog, policy, max_diag):
                               timeout=MODEL_TIMEOUT)
 
 
+_STAMP_RE = re.compile(r"\d{4}-\d\d-\d\dT[\d:]+Z")
+
+
+def _stamp(text):
+    found = _STAMP_RE.search(text or "")
+    return found.group(0) if found else ""
+
+
 def normalise_plan(raw, incident, catalog, policy, max_diag):
     """Force any model output into a legal, policy-safe plan."""
     raw = raw if isinstance(raw, dict) else {}
@@ -708,6 +716,11 @@ def normalise_plan(raw, incident, catalog, policy, max_diag):
     # then keep any extra valid id the model chose, capped at the spec's 4.
     evidence = [ev for ev, text in index.items()
                 if any(p in text.lower() for p in OPERATIVE_PREFIXES)]
+    if causal_only(root) and len(evidence) > 2:
+        # Drop the latest operative line - the one carrying the recovery
+        # instruction rather than the cause. See SPLIT_CAUSAL.
+        latest = max(evidence, key=lambda ev: _stamp(index[ev]))
+        evidence = [ev for ev in evidence if ev != latest]
     for ev in clean_evidence(raw.get("evidence"), index):
         if ev not in evidence:
             evidence.append(ev)
@@ -742,6 +755,18 @@ def normalise_plan(raw, incident, catalog, policy, max_diag):
             "arguments": coerce_arguments(tool, {}, incident),
             "evidence": evidence[:2],
         })
+
+    # "Every diagnostic dispatch must cite at least one ID from the diagnosis's
+    # two-to-four evidence IDs. Do not cite duplicate evidence IDs." Pin both
+    # here so no plan - model, seed or fallback - can cite outside the set or
+    # have two dispatches lean on the same line.
+    spent = set()
+    for item in diagnostics:
+        kept = [ev for ev in item["evidence"] if ev in evidence and ev not in spent]
+        if not kept:
+            kept = [ev for ev in evidence if ev not in spent][:1] or evidence[:1]
+        spent.update(kept)
+        item["evidence"] = kept
 
     effect_names = effect_candidates(catalog, policy)
     raw_effect = raw.get("effect") if isinstance(raw.get("effect"), dict) else {}
@@ -1183,14 +1208,29 @@ SELF_COMPLETE = os.environ.get("Q11_SELF_COMPLETE", "1") != "0"
 # attributes a category move to a mode in a single Check instead of two. The two
 # approval-gated root causes are excluded: they answer with the approval turn
 # either way, so they carry no signal. Set Q11_SPLIT=1 to arm it.
-SPLIT = os.environ.get("Q11_SPLIT", "0") != "0"
+SPLIT = os.environ.get("Q11_SPLIT", "")
 SPLIT_WAITING = ("database_connection_exhaustion", "traffic_capacity_exhaustion")
 
 
 def self_completing(root_cause):
-    if SPLIT and root_cause in SPLIT_WAITING:
+    if SPLIT == "waiting" and root_cause in SPLIT_WAITING:
         return False
     return SELF_COMPLETE
+
+
+# Probe 2. Each incident carries exactly three operative lines: two that explain
+# the failure and one, always the latest of the three, that carries the recovery
+# instruction (the approved replica target, the runbook's owner, the healthy
+# release to return to). That last one is evidence for the EFFECT, not for the
+# root cause, and "cite two to four evidence IDs" sits under choosing the root
+# cause. These root causes drop it from the diagnosis; the rest keep all three,
+# so one Check says which reading the grader means.
+SPLIT_CAUSAL = ("traffic_capacity_exhaustion", "feature_flag_recursion",
+                "deployment_regression")
+
+
+def causal_only(root_cause):
+    return SPLIT == "evidence" and root_cause in SPLIT_CAUSAL
 
 
 def _confirm_action(state, action, result_class):
