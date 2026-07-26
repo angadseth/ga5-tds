@@ -14,7 +14,7 @@ import urllib.request
 
 EMAIL = "24f2004141@ds.study.iitm.ac.in"
 LEVELDB = (r"C:\Users\24f20\AppData\Local\Google\Chrome\User Data"
-           r"\Profile 1\Local Storage\leveldb\003060.ldb")
+           r"\*\Local Storage\leveldb\*")
 
 QUESTIONS = {
     "q3": ("q-agent-tool-guardrail-server", "v1", 4,
@@ -38,8 +38,21 @@ HEADERS = {
 
 
 def quiz_sign():
-    blob = open(LEVELDB, "rb").read().decode("utf-8", "replace")
-    return re.search(r'"quizSign":"([^"]+)"', blob).group(1)
+    """Recover the signed token from whichever leveldb file currently holds it.
+
+    Chrome compacts these files, so pinning one name breaks as soon as it
+    rotates. Scan them newest-first instead.
+    """
+    import glob
+    import os
+    files = sorted((f for f in glob.glob(LEVELDB) if os.path.isfile(f)),
+                   key=os.path.getmtime, reverse=True)
+    for path in files:
+        blob = open(path, "rb").read().decode("utf-8", "replace")
+        found = re.findall(r'"quizSign":"([^"]+)"', blob)
+        if found:
+            return found[-1]
+    raise SystemExit("no quizSign in Chrome local storage - open the exam page")
 
 
 def main(key, url=None):

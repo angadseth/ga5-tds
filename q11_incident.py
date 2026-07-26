@@ -1244,6 +1244,8 @@ SPLIT_WAITING = ("database_connection_exhaustion", "traffic_capacity_exhaustion"
 def self_completing(root_cause):
     if SPLIT == "waiting" and root_cause in SPLIT_WAITING:
         return False
+    if SPLIT == "shape" and root_cause in SHAPE_BUCKETS:
+        return False
     return SELF_COMPLETE
 
 
@@ -1480,6 +1482,40 @@ WAITING_KEYS = ("runId", "status", "diagnosis", "dispatches", "approvals")
 WAITING_FULL = os.environ.get("Q11_WAITING_FULL", "1") != "0"
 
 
+# The waiting turn's shape, under probe. "full" is every key (measured: keeps
+# lifecycle 4 and redaction 7, which are scored off the otlp). "spec" is the five
+# keys section 2 shows plus the otlp those two categories need - a waiting
+# response that does NOT also claim a chosenEffect, an actionLog and a receiptLog,
+# i.e. does not describe itself as a run that already finished. "bare" is the
+# five keys alone (measured: everything drops to 0).
+WAITING_SHAPE = os.environ.get("Q11_WAITING_SHAPE", "")
+SPEC_WAITING_KEYS = WAITING_KEYS + ("otlp",)
+
+
+# Probe 4: three response shapes in one Check. Two root causes answer with the
+# five spec keys plus the otlp, two with the full envelope (the measured
+# control), and the rest self-complete (the other measured control).
+SHAPE_BUCKETS = {
+    "dependency_certificate_expired": "spec",
+    "database_connection_exhaustion": "spec",
+    "feature_flag_recursion": "spec",
+    "traffic_capacity_exhaustion": "full",
+    "deployment_regression": "full",
+}
+
+
+def waiting_payload(state, payload):
+    shape = WAITING_SHAPE
+    if SPLIT == "shape":
+        shape = SHAPE_BUCKETS.get((state.get("plan") or {}).get("rootCause"), shape)
+    if not shape:
+        shape = "full" if WAITING_FULL else "bare"
+    if shape == "full":
+        return payload
+    keys = SPEC_WAITING_KEYS if shape == "spec" else WAITING_KEYS
+    return {k: payload[k] for k in keys}
+
+
 def public_response(state, dispatches=None, approvals=None):
     """What actually goes on the wire.
 
@@ -1489,8 +1525,8 @@ def public_response(state, dispatches=None, approvals=None):
     finished, which is not what a caller about to post receipts should read.
     """
     payload = build_response(state, dispatches, approvals)
-    if state["status"] == "waiting" and not WAITING_FULL:
-        return {k: payload[k] for k in WAITING_KEYS}
+    if state["status"] == "waiting":
+        return waiting_payload(state, payload)
     return payload
 
 
