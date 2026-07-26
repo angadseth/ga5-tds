@@ -832,7 +832,7 @@ def match_root_cause(guess, allowed):
 CANONICAL_EFFECT_TOOL = {
     "dependency_certificate_expired": "open_incident",
     "database_connection_exhaustion": "scale_service",
-    "secret_rotation_mismatch": "no_action",
+    "secret_rotation_mismatch": "open_incident",
     "traffic_capacity_exhaustion": "scale_service",
     "feature_flag_recursion": "disable_feature",
     "deployment_regression": "rollback_deployment",
