@@ -1072,7 +1072,14 @@ def validate_commit(body):
         if not isinstance(r.get("receiptId"), str) or not r["receiptId"].strip():
             raise HTTPException(status_code=422, detail="receipt is missing receiptId")
         if call_id in seen:
-            raise HTTPException(status_code=400, detail="duplicate callId in receipts")
+            # A repeated receipt is one of the reject-the-whole-commit cases the
+            # question lists next to an invalid or moved signature - "invalid,
+            # missing, duplicated, or moved" - not a malformed schema. It is
+            # answered like the other receipt rejections, with 409; the two
+            # malformed probes are a duplicate dossierId and an unknown
+            # operation, and both still get 400.
+            raise HTTPException(status_code=409,
+                                detail="duplicate callId in receipts")
         seen.add(call_id)
     return eval_id, input_digest, receipts
 
