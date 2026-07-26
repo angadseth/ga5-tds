@@ -759,8 +759,14 @@ def normalise_plan(raw, incident, catalog, policy, max_diag):
             "evidence": evidence[:2],
         })
 
+    budget = min(limit, diagnostic_budget(root, limit))
     wanted = [name for name in CANONICAL_DIAGNOSTICS.get(root, ())
-              if tool_by_name(candidates, name)][:limit]
+              if tool_by_name(candidates, name)][:budget]
+    while len(wanted) < budget:
+        extra = next((t["name"] for t in candidates if t["name"] not in wanted), None)
+        if not extra:
+            break
+        wanted.append(extra)
     if wanted and [d["toolName"] for d in diagnostics] != wanted:
         by_name = {d["toolName"]: d for d in diagnostics}
         diagnostics = [by_name.get(name) or {
@@ -1272,6 +1278,25 @@ def causal_only(root_cause):
 # has never once posted to /receipts. Let that one incident follow the real
 # waiting flow while the six seeded ones keep the mode that measurably scores.
 AUDIT_WAITS = os.environ.get("Q11_AUDIT_WAITS", "0") != "0"
+
+# Probe 5, the last untested axis: how MANY diagnostics. We have always sent
+# exactly two, and the question says "Return only the diagnostic calls needed to
+# confirm it. Unneeded calls lose marks." One Check runs one, two and three
+# across the six root causes.
+DIAG_COUNT = {
+    "dependency_certificate_expired": 1,
+    "database_connection_exhaustion": 1,
+    "secret_rotation_mismatch": 3,
+    "traffic_capacity_exhaustion": 3,
+    "feature_flag_recursion": 2,
+    "deployment_regression": 2,
+}
+
+
+def diagnostic_budget(root_cause, default):
+    if SPLIT == "diagcount":
+        return DIAG_COUNT.get(root_cause, default)
+    return default
 
 
 def _confirm_action(state, action, result_class):
