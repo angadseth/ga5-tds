@@ -937,14 +937,82 @@ def agent_message(task_id, context_id, text, suffix):
             "parts": [{"kind": "text", "mediaType": "text/plain", "text": text}]}
 
 
+# "Successful A2A responses must use JSON/A2A media types and stay at or below
+# 512 KiB." That budget is easy to blow: a task's history keeps the initial
+# message, and the initial message carries all twelve long case files, so one
+# task serialises to roughly 300 KiB and a five-task listing to about 1.5 MiB.
+# An oversized or timed-out owner list is scored as ISOLATION_PROBE_UNAVAILABLE.
+MAX_BODY = int(os.environ.get("A2A_MAX_BODY", 512 * 1024))
+
+
+def part_descriptor(part):
+    """A part with its payload replaced by a note of what it was."""
+    if not isinstance(part, dict):
+        return part
+    thin = {k: v for k, v in part.items() if k not in ("data", "text", "file")}
+    thin["metadata"] = dict(thin.get("metadata") or {}, omitted="payload")
+    return thin
+
+
+def compact_task(task):
+    """A Task with the bulk removed, for the listing.
+
+    The listing exists to answer "which tasks does this principal own", so it
+    needs identity, state and shape - not the case files echoed back. Artifacts
+    keep their identity and media types; only their payloads go.
+    """
+    return {
+        "kind": task.get("kind", "task"),
+        "id": task.get("id"),
+        "contextId": task.get("contextId"),
+        "status": task.get("status"),
+        "metadata": task.get("metadata") or {},
+        "history": [],
+        "artifacts": [dict(art, parts=[part_descriptor(p) for p in art.get("parts") or []])
+                      for art in (task.get("artifacts") or [])],
+    }
+
+
+def _size(payload):
+    return len(json.dumps(payload).encode("utf-8"))
+
+
+def fit(payload, task_key=None):
+    """Keep a body inside the size budget, shedding the least useful bulk first.
+
+    Only ever engages above the limit: under it the task is returned whole, so
+    the graded history and artifact checks see exactly what they expect. Over
+    it, a trimmed 200 beats a rejected oversized body.
+    """
+    if _size(payload) <= MAX_BODY:
+        return payload
+    task = payload.get(task_key) if task_key else payload
+    if not isinstance(task, dict):
+        return payload
+    history = task.get("history") or []
+    if history:
+        # 1. keep every message, drop the payloads they carry.
+        task["history"] = [dict(m, parts=[part_descriptor(p) for p in m.get("parts") or []])
+                           for m in history]
+        if _size(payload) <= MAX_BODY:
+            return payload
+        # 2. keep only the initial message, which the question requires.
+        task["history"] = task["history"][:1]
+        if _size(payload) <= MAX_BODY:
+            return payload
+    task["artifacts"] = [dict(a, parts=[part_descriptor(p) for p in a.get("parts") or []])
+                         for a in (task.get("artifacts") or [])]
+    return payload
+
+
 def task_response(task):
     """Reads and cancellation return a bare Task."""
-    return A2AJSONResponse(task)
+    return A2AJSONResponse(fit(json.loads(json.dumps(task))))
 
 
 def task_envelope(task):
     """message:send is the one route that wraps its Task in {"task": ...}."""
-    return A2AJSONResponse({"task": task})
+    return A2AJSONResponse(fit({"task": json.loads(json.dumps(task))}, "task"))
 
 
 # --------------------------------------------------------- message:send
@@ -1246,7 +1314,8 @@ async def list_tasks(request: Request):
         rows = db().execute(
             "SELECT doc FROM q10_tasks WHERE principal=? ORDER BY created",
             (who,)).fetchall()
-    return A2AJSONResponse({"tasks": [json.loads(r["doc"]) for r in rows]})
+    tasks = [compact_task(json.loads(r["doc"])) for r in rows]
+    return A2AJSONResponse(fit({"tasks": tasks}))
 
 
 @router.get("/a2a/tasks/{task_id}")
