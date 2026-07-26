@@ -1471,6 +1471,24 @@ def finish(state, status):
 
 # ------------------------------------------------------------------ response
 
+# Probe 6: does proposal read `dispatches`? A self-completed run answers terminal
+# with an empty array, so "diagnostic tool dispatches before effects" - the phrase
+# proposal's guidance uses - never appears there, only in actionLog. Echoing the
+# issued dispatches back was tried once before, but on a build whose tool
+# arguments were malformed and whose model call was fake. Retest it cleanly on
+# three root causes.
+ECHO_TERMINAL = ("dependency_certificate_expired", "database_connection_exhaustion",
+                 "traffic_capacity_exhaustion")
+
+
+def echo_dispatches(state):
+    if SPLIT != "echo":
+        return []
+    if (state.get("plan") or {}).get("rootCause") not in ECHO_TERMINAL:
+        return []
+    return list(state.get("dispatchLog") or [])
+
+
 def build_response(state, dispatches=None, approvals=None):
     """The complete envelope, as the durable final result defines it."""
     plan = state["plan"]
@@ -1486,7 +1504,8 @@ def build_response(state, dispatches=None, approvals=None):
         # "A final response has no pending work: omit dispatches and approvals,
         # or return both as empty arrays." Every dispatch ever issued is still
         # reported, in actionLog, which is where the question puts it.
-        "dispatches": [] if terminal else (dispatches or []),
+        "dispatches": (echo_dispatches(state) if terminal
+                       else (dispatches or [])),
         "approvals": [] if terminal else (approvals or []),
         "actionLog": state.get("dispatchLog", []),
         "receiptLog": state["receiptLog"],
