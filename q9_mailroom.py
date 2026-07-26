@@ -111,6 +111,10 @@ _conn.executescript(
         eval_id TEXT PRIMARY KEY,
         verifier TEXT
     );
+    CREATE TABLE IF NOT EXISTS q9_v3_eval_content (
+        eval_id TEXT PRIMARY KEY,
+        content_digest TEXT
+    );
     """
 )
 _conn.commit()
@@ -979,9 +983,26 @@ async def do_propose(body):
     eval_id, dossiers, ids = validate_propose(body)
     input_digest = digest(dossiers)
 
+    # inputDigest is the dossier digest the grader echoes back on commit, so it
+    # must keep meaning exactly that. Conflict detection needs a wider view:
+    # the grader re-sends a stored evaluation with one character changed in the
+    # receiptVerifier public key, everything else byte-identical. That is the
+    # same evaluationId with changed content and owes a 409, so identity is
+    # taken over the whole semantic request.
+    content_digest = digest({
+        "dossiers": dossiers,
+        "corpus": body.get("corpus"),
+        "allowedActions": body.get("allowedActions"),
+        "profile": body.get("profile"),
+        "receiptVerifier": body.get("receiptVerifier"),
+    })
+
     row = _get("q9_v3_evals", "eval_id", eval_id)
     if row is not None:
-        if row[1] == input_digest:
+        stored = _get("q9_v3_eval_content", "eval_id", eval_id)
+        unchanged = row[1] == input_digest and (
+            stored is None or stored[1] == content_digest)
+        if unchanged:
             return json.loads(row[2])  # exact replay: no model work, no new ids
         raise HTTPException(status_code=409,
                             detail="evaluationId already used with different content")
@@ -1037,6 +1058,8 @@ async def do_propose(body):
         "inputDigest": input_digest,
         "proposals": proposals,
     }
+    _put("INSERT OR REPLACE INTO q9_v3_eval_content(eval_id,content_digest) VALUES(?,?)",
+         (eval_id, content_digest))
     _put("INSERT OR REPLACE INTO q9_v3_evals VALUES (?,?,?)",
          (eval_id, input_digest, json.dumps(response, ensure_ascii=False)))
     return response
