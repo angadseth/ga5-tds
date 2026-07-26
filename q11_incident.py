@@ -759,9 +759,13 @@ def normalise_plan(raw, incident, catalog, policy, max_diag):
             "evidence": evidence[:2],
         })
 
-    budget = min(limit, diagnostic_budget(root, limit))
-    wanted = [name for name in CANONICAL_DIAGNOSTICS.get(root, ())
-              if tool_by_name(candidates, name)][:budget]
+    canon = [name for name in CANONICAL_DIAGNOSTICS.get(root, ())
+             if tool_by_name(candidates, name)]
+    # The default budget is however many the root cause actually needs, NOT the
+    # policy maximum - padding up to maximumDiagnostics is exactly the "unneeded
+    # call" the question deducts for. Only the probe overrides it.
+    budget = min(limit, diagnostic_budget(root, len(canon) or limit))
+    wanted = canon[:budget]
     while len(wanted) < budget:
         extra = next((t["name"] for t in candidates if t["name"] not in wanted), None)
         if not extra:
